@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chalk Talk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chalk Talk">
+<meta name="theme-color" content="#1f2e4d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Graduate&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root{
+    --navy:#1f2e4d; --navy-2:#28395e; --navy-3:#33466f;
+    --cream:#f6efdd; --cream-dim:#cfc6ab;
+    --red:#d64533; --red-deep:#b2372a;
+    --gold:#f0a72e;
+    --grass:#4c8f4f; --grass-dark:#427f45;
+    --dirt:#c9925e;
+    --chalk:#fdfaf1;
+    --shadow:0 2px 10px rgba(15,25,45,.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; margin:0;}
+  body{
+    background:var(--navy);
+    color:var(--cream);
+    font-family:'Nunito','Trebuchet MS',sans-serif;
+    height:100vh; height:100dvh;
+    display:flex; flex-direction:column;
+    overflow:hidden; overscroll-behavior:none;
+    -webkit-user-select:none; user-select:none;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  header{
+    display:flex; align-items:center; gap:14px;
+    padding:10px 16px calc(10px) 16px;
+    padding-top:calc(10px + env(safe-area-inset-top));
+    background:var(--navy);
+    border-bottom:3px solid var(--red);
+    flex:none;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px; min-width:0;}
+  h1{
+    font-family:'Graduate','Arial Black',sans-serif;
+    font-size:clamp(18px,3vw,26px); margin:0;
+    letter-spacing:.06em; color:var(--cream); white-space:nowrap;
+  }
+  h1 .ball{color:var(--red);}
+  .tagline{font-size:12px; font-weight:700; color:var(--cream-dim); letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;}
+  header .spacer{flex:1;}
+  .hbtn{
+    font-family:'Graduate','Arial Black',sans-serif; letter-spacing:.08em;
+    font-size:13px; color:var(--cream);
+    background:var(--navy-2); border:2px solid var(--navy-3);
+    border-radius:999px; padding:10px 16px; cursor:pointer;
+  }
+  .hbtn:active{transform:translateY(1px);}
+  .hbtn.warn{border-color:var(--red); color:#ffb3a8;}
+  .hbtn:focus-visible,.tbtn:focus-visible,button:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+
+  /* ── Tip banner ─────────────────────────── */
+  #tip{
+    display:none; align-items:center; gap:12px;
+    background:#2c5232; color:var(--chalk);
+    padding:10px 16px; flex:none;
+    border-bottom:2px dashed rgba(253,250,241,.35);
+  }
+  #tip.show{display:flex;}
+  #tip .tip-title{
+    font-family:'Graduate','Arial Black',sans-serif; font-size:14px;
+    letter-spacing:.06em; color:var(--gold); white-space:nowrap;
+  }
+  #tip .tip-text{font-size:clamp(14px,2.2vw,18px); font-weight:800; flex:1; min-width:0;}
+  #tip .tip-close{
+    background:none; border:none; color:var(--chalk); font-size:22px;
+    font-weight:800; cursor:pointer; padding:4px 8px; line-height:1;
+  }
+
+  /* ── Main layout ────────────────────────── */
+  main{flex:1; display:flex; min-height:0;}
+  #rail{
+    flex:none; width:104px; display:flex; flex-direction:column; gap:8px;
+    padding:12px 10px calc(12px + env(safe-area-inset-bottom)) 12px;
+    background:var(--navy); overflow-y:auto;
+  }
+  .tbtn{
+    font-family:'Graduate','Arial Black',sans-serif; letter-spacing:.06em;
+    font-size:12px; color:var(--cream);
+    background:var(--navy-2); border:2px solid var(--navy-3);
+    border-radius:14px; padding:12px 6px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+  }
+  .tbtn svg{width:24px; height:24px; display:block;}
+  .tbtn.on{background:var(--red); border-color:var(--red-deep); color:#fff;}
+  .tbtn:active{transform:translateY(1px);}
+  .tbtn[disabled]{opacity:.4; pointer-events:none;}
+  .rail-gap{height:6px; flex:none; border-top:2px solid var(--navy-2); margin:4px 6px;}
+  #stepBadge{
+    font-size:11px; font-weight:800; color:var(--gold); letter-spacing:.05em;
+    text-align:center; font-family:'Nunito',sans-serif;
+  }
+
+  #stage{flex:1; min-width:0; min-height:0; position:relative; background:#3c6f3f;}
+  #field{
+    position:absolute; inset:0; width:100%; height:100%;
+    touch-action:none; display:block;
+  }
+  .piece{cursor:grab;}
+  .piece text{pointer-events:none;}
+
+  /* ── Toast ──────────────────────────────── */
+  #toast{
+    position:absolute; left:50%; bottom:24px; transform:translateX(-50%) translateY(80px);
+    background:var(--navy); color:var(--cream); font-weight:800; font-size:15px;
+    padding:12px 20px; border-radius:999px; border:2px solid var(--gold);
+    box-shadow:var(--shadow); transition:transform .25s ease; pointer-events:none;
+    max-width:80%; text-align:center;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ── Side panel ─────────────────────────── */
+  #scrim{position:fixed; inset:0; background:rgba(10,16,30,.5); display:none;}
+  #scrim.show{display:block;}
+  #panel{
+    position:fixed; top:0; right:0; bottom:0; width:min(400px,92vw);
+    background:var(--navy); border-left:3px solid var(--red);
+    transform:translateX(105%); transition:transform .25s ease;
+    display:flex; flex-direction:column; z-index:10;
+    padding-top:env(safe-area-inset-top);
+  }
+  #panel.show{transform:translateX(0);}
+  .panel-head{display:flex; align-items:center; padding:14px 16px 0;}
+  .ptabs{display:flex; gap:8px; flex:1;}
+  .ptab{
+    font-family:'Graduate','Arial Black',sans-serif; font-size:13px; letter-spacing:.06em;
+    color:var(--cream-dim); background:none; border:none; cursor:pointer;
+    padding:8px 4px; border-bottom:3px solid transparent;
+  }
+  .ptab.on{color:var(--cream); border-bottom-color:var(--gold);}
+  .panel-close{background:none; border:none; color:var(--cream); font-size:26px; cursor:pointer; padding:2px 10px;}
+  .panel-body{flex:1; overflow-y:auto; padding:14px 16px calc(20px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch;}
+  .card{
+    width:100%; text-align:left; background:var(--navy-2); border:2px solid var(--navy-3);
+    border-radius:14px; padding:14px; margin-bottom:10px; cursor:pointer; color:var(--cream);
+    font-family:'Nunito',sans-serif; display:block;
+  }
+  .card:active{border-color:var(--gold);}
+  .card .c-title{font-weight:800; font-size:16px; margin-bottom:3px;}
+  .card .c-sub{font-size:13px; color:var(--cream-dim); font-weight:600;}
+  .card .c-anim{
+    display:inline-block; margin-top:8px; font-size:11px; font-weight:800; letter-spacing:.08em;
+    color:var(--navy); background:var(--gold); border-radius:999px; padding:3px 10px;
+  }
+  .play-row{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .play-row .card{margin:0; flex:1;}
+  .del{
+    flex:none; width:44px; height:44px; border-radius:12px; border:2px solid var(--navy-3);
+    background:var(--navy-2); color:#ff9d90; font-size:18px; font-weight:800; cursor:pointer;
+  }
+  .del.confirm{background:var(--red); color:#fff; font-size:11px; letter-spacing:.03em;}
+  .save-row{display:flex; gap:8px; margin-bottom:16px;}
+  .save-row input{
+    flex:1; min-width:0; background:var(--navy-2); border:2px solid var(--navy-3); border-radius:12px;
+    color:var(--cream); font:700 15px 'Nunito',sans-serif; padding:12px;
+  }
+  .save-row input::placeholder{color:var(--cream-dim);}
+  .save-row button{
+    flex:none; background:var(--red); border:2px solid var(--red-deep); color:#fff;
+    font-family:'Graduate','Arial Black',sans-serif; font-size:13px; letter-spacing:.06em;
+    border-radius:12px; padding:0 18px; cursor:pointer;
+  }
+  .empty{color:var(--cream-dim); font-weight:600; font-size:14px; text-align:center; padding:30px 10px; line-height:1.5;}
+
+  /* ── Narrow screens: rail moves to bottom ── */
+  @media (max-width:640px){
+    main{flex-direction:column;}
+    #rail{
+      order:2; width:auto; flex-direction:row; overflow-x:auto; overflow-y:hidden;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+    .tbtn{min-width:66px; padding:8px 4px;}
+    .rail-gap{width:6px; height:auto; border-top:none; border-left:2px solid var(--navy-2); margin:6px 4px;}
+    .tagline{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #panel,#toast{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1><span class="ball">&#9679;</span> CHALK TALK</h1>
+    <span class="tagline">6U Baseball Board</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="hbtn" id="btnLessons">Lessons</button>
+  <button class="hbtn" id="btnPlays">My Plays</button>
+  <button class="hbtn warn" id="btnReset">Reset</button>
+</header>
+
+<div id="tip">
+  <span class="tip-title" id="tipTitle"></span>
+  <span class="tip-text" id="tipText"></span>
+  <button class="tip-close" id="tipClose" aria-label="Dismiss tip">&times;</button>
+</div>
+
+<main>
+  <nav id="rail" aria-label="Tools">
+    <button class="tbtn on" id="modeMove">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg>
+      MOVE
+    </button>
+    <button class="tbtn" id="modeDraw">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>
+      DRAW
+    </button>
+    <button class="tbtn" id="btnUndo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+      UNDO
+    </button>
+    <button class="tbtn" id="btnClear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l16 16M20 4L4 20"/></svg>
+      CLEAR
+    </button>
+    <div class="rail-gap"></div>
+    <button class="tbtn on" id="btnNames">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+      NAMES
+    </button>
+    <div class="rail-gap"></div>
+    <button class="tbtn" id="btnStep">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 6V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2M10 13h.01M7 16l3-3 4 4"/></svg>
+      STEP +
+    </button>
+    <button class="tbtn" id="btnPlay">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 4l13 8-13 8z"/></svg>
+      PLAY
+    </button>
+    <div id="stepBadge"></div>
+    <button class="tbtn" id="btnClearSteps" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+      NO STEPS
+    </button>
+  </nav>
+
+  <div id="stage">
+    <svg id="field" viewBox="0 0 1000 940" preserveAspectRatio="xMidYMid meet" aria-label="Baseball field board"></svg>
+    <div id="toast" role="status"></div>
+  </div>
+</main>
+
+<div id="scrim"></div>
+<aside id="panel" aria-label="Lessons and saved plays">
+  <div class="panel-head">
+    <div class="ptabs">
+      <button class="ptab on" id="tabLessons">LESSONS</button>
+      <button class="ptab" id="tabPlays">MY PLAYS</button>
+    </div>
+    <button class="panel-close" id="panelClose" aria-label="Close panel">&times;</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</aside>
+
+<script>
+'use strict';
+/* ================= Field geometry ================= */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('field');
+
+const HOME=[500,800], FIRST=[690,610], SECOND=[500,420], THIRD=[310,610];
+
+const FIELDERS = [
+  {id:'P',  name:'Pitcher',      x:500, y:640},
+  {id:'C',  name:'Catcher',      x:500, y:856},
+  {id:'1B', name:'First Base',   x:668, y:572},
+  {id:'2B', name:'Second Base',  x:598, y:478},
+  {id:'SS', name:'Shortstop',    x:402, y:478},
+  {id:'3B', name:'Third Base',   x:332, y:572},
+  {id:'LF', name:'Left Field',   x:235, y:300},
+  {id:'CF', name:'Center Field', x:500, y:195},
+  {id:'RF', name:'Right Field',  x:765, y:300},
+];
+const RUNNERS = [
+  {id:'BT', name:'Batter', x:452, y:822},
+  {id:'R1', name:'Runner', x:822, y:888},
+  {id:'R2', name:'Runner', x:878, y:888},
+  {id:'R3', name:'Runner', x:934, y:888},
+];
+const BALL_START = {x:500, y:775};
+
+function defaultPositions(){
+  const p = {};
+  FIELDERS.forEach(f=>p[f.id]=[f.x,f.y]);
+  RUNNERS.forEach(r=>p[r.id]=[r.x,r.y]);
+  p.BALL=[BALL_START.x, BALL_START.y];
+  return p;
+}
+
+/* ================= State ================= */
+let positions = defaultPositions();  // id -> [x,y]
+let chalk = [];                      // array of point arrays [[x,y],...]
+let steps = [];                      // array of position maps
+let namesOn = true;
+let mode = 'move';
+let playing = false;
+
+/* ================= Build the ballpark ================= */
+function el(tag, attrs, parent){
+  const n = document.createElementNS(SVG_NS, tag);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(n);
+  return n;
+}
+
+function buildPark(){
+  // grass
+  el('rect',{x:0,y:0,width:1000,height:940,fill:'#4c8f4f'},svg);
+  // mow stripes: soft arcs centered on home
+  const stripes = el('g',{fill:'none',stroke:'rgba(255,255,255,0.05)','stroke-width':34},svg);
+  for(let r=120;r<=640;r+=68){
+    el('path',{d:`M ${500-r} 800 A ${r} ${r} 0 0 1 ${500+r} 800`},stripes);
+  }
+  // dirt infield
+  el('circle',{cx:500,cy:612,r:302,fill:'#c9925e'},svg);
+  // inner grass diamond
+  el('polygon',{points:'500,742 632,610 500,478 368,610',fill:'#4c8f4f'},svg);
+  // home-plate dirt circle
+  el('circle',{cx:500,cy:800,r:74,fill:'#c9925e'},svg);
+  // mound
+  el('circle',{cx:500,cy:640,r:34,fill:'#bd854f'},svg);
+  el('rect',{x:491,y:636,width:18,height:6,rx:2,fill:'#fdfaf1'},svg);
+  // fence
+  el('path',{d:'M120,420 A537,537 0 0 1 880,420',fill:'none',stroke:'#2c5232','stroke-width':16,'stroke-linecap':'round'},svg);
+  el('path',{d:'M120,420 A537,537 0 0 1 880,420',fill:'none',stroke:'#f0d99b','stroke-width':4,'stroke-linecap':'round'},svg);
+  // foul lines
+  const lines = el('g',{stroke:'#fdfaf1','stroke-width':6,'stroke-linecap':'round',fill:'none'},svg);
+  el('line',{x1:500,y1:800,x2:143,y2:443},lines);
+  el('line',{x1:500,y1:800,x2:857,y2:443},lines);
+  // base paths
+  el('polygon',{points:'500,800 690,610 500,420 310,610',fill:'none',stroke:'#fdfaf1','stroke-width':6,'stroke-linejoin':'round'},svg);
+  // bases
+  [[FIRST,'45'],[SECOND,'45'],[THIRD,'45']].forEach(([b])=>{
+    el('rect',{x:b[0]-16,y:b[1]-16,width:32,height:32,rx:4,fill:'#fdfaf1',
+      transform:`rotate(45 ${b[0]} ${b[1]})`,stroke:'#c9925e','stroke-width':2},svg);
+  });
+  // home plate
+  el('polygon',{points:'482,790 518,790 518,806 500,820 482,806',fill:'#fdfaf1',stroke:'#c9925e','stroke-width':2},svg);
+  // batter's boxes
+  el('rect',{x:437,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
+  el('rect',{x:533,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
+  // dugout bench for spare runners
+  el('rect',{x:790,y:858,width:190,height:60,rx:12,fill:'rgba(31,46,77,0.35)'},svg);
+  el('text',{x:885,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
+    'font-family':"'Nunito',sans-serif",fill:'rgba(253,250,241,0.8)'},svg).textContent='RUNNERS';
+}
+buildPark();
+
+const chalkLayer = el('g',{},svg);
+const pieceLayer = el('g',{},svg);
+
+/* ================= Pieces ================= */
+const pieceEls = {};
+
+function makePiece(def, kind){
+  const g = el('g',{class:'piece','data-id':def.id},pieceLayer);
+  el('circle',{r:44,fill:'transparent'},g); // touch pad
+  if(kind==='ball'){
+    el('circle',{r:16,fill:'#fdfaf1',stroke:'#c9c2ad','stroke-width':1.5},g);
+    el('path',{d:'M -8 -12 Q -2 0 -8 12',fill:'none',stroke:'#d64533','stroke-width':2.5,'stroke-linecap':'round'},g);
+    el('path',{d:'M 8 -12 Q 2 0 8 12',fill:'none',stroke:'#d64533','stroke-width':2.5,'stroke-linecap':'round'},g);
+  }else{
+    const fielder = kind==='fielder';
+    el('circle',{r:30,fill:fielder?'#2b4a8b':'#f0a72e',stroke:'#fdfaf1','stroke-width':4},g);
+    const initials = fielder ? def.id : (def.id==='BT' ? 'B' : 'R');
+    el('text',{y:9,'text-anchor':'middle','font-size':initials.length>1?22:26,'font-weight':800,
+      'font-family':"'Graduate','Arial Black',sans-serif",
+      fill:fielder?'#fdfaf1':'#1f2e4d'},g).textContent = initials;
+    if(fielder || def.id==='BT'){
+      el('text',{class:'plabel',y:56,'text-anchor':'middle','font-size':21,'font-weight':800,
+        'font-family':"'Nunito',sans-serif",fill:'#ffffff',stroke:'#274a2a','stroke-width':4,
+        'paint-order':'stroke','stroke-linejoin':'round'},g).textContent = def.name;
+    }
+  }
+  pieceEls[def.id]=g;
+}
+FIELDERS.forEach(f=>makePiece(f,'fielder'));
+RUNNERS.forEach(r=>makePiece(r,'runner'));
+makePiece({id:'BALL',name:'Ball',...BALL_START},'ball');
+
+function render(){
+  for(const id in pieceEls){
+    const [x,y]=positions[id];
+    pieceEls[id].setAttribute('transform',`translate(${x} ${y})`);
+    const lbl=pieceEls[id].querySelector('.plabel');
+    if(lbl) lbl.style.display = namesOn?'':'none';
+  }
+}
+
+function renderChalk(){
+  chalkLayer.textContent='';
+  chalk.forEach(pts=>{
+    const g=el('g',{},chalkLayer);
+    const d=pts.map((p,i)=>(i?'L':'M')+p[0]+' '+p[1]).join(' ');
+    el('path',{d,fill:'none',stroke:'#fdfaf1','stroke-width':7,'stroke-linecap':'round',
+      'stroke-linejoin':'round',opacity:.92},g);
+    if(pts.length>1){
+      let j=pts.length-2;
+      const last=pts[pts.length-1];
+      while(j>0 && Math.hypot(last[0]-pts[j][0],last[1]-pts[j][1])<14) j--;
+      const a=Math.atan2(last[1]-pts[j][1],last[0]-pts[j][0]);
+      const s=20;
+      const p1=[last[0]-s*Math.cos(a-0.45),last[1]-s*Math.sin(a-0.45)];
+      const p2=[last[0]-s*Math.cos(a+0.45),last[1]-s*Math.sin(a+0.45)];
+      el('path',{d:`M${p1[0]} ${p1[1]} L${last[0]} ${last[1]} L${p2[0]} ${p2[1]}`,
+        fill:'none',stroke:'#fdfaf1','stroke-width':7,'stroke-linecap':'round',
+        'stroke-linejoin':'round',opacity:.92},g);
+    }
+  });
+}
+
+/* ================= Pointer interaction ================= */
+function toField(evt){
+  const ctm = svg.getScreenCTM();
+  if(!ctm) return null;
+  const pt = svg.createSVGPoint();
+  pt.x=evt.clientX; pt.y=evt.clientY;
+  const p = pt.matrixTransform(ctm.inverse());
+  return [Math.max(14,Math.min(986,p.x)), Math.max(14,Math.min(926,p.y))];
+}
+
+let drag=null, sketch=null;
+
+svg.addEventListener('pointerdown',e=>{
+  if(playing) return;
+  const p=toField(e); if(!p) return;
+  e.preventDefault();
+  if(mode==='draw'){
+    sketch=[p];
+    chalk.push(sketch);
+    renderChalk();
+  }else{
+    const target=e.target.closest('.piece');
+    if(!target) return;
+    const id=target.getAttribute('data-id');
+    drag={id, dx:positions[id][0]-p[0], dy:positions[id][1]-p[1]};
+    pieceLayer.appendChild(pieceEls.BALL);           // keep ball on top
+    if(id!=='BALL') pieceLayer.insertBefore(pieceEls[id],pieceEls.BALL);
+  }
+  svg.setPointerCapture(e.pointerId);
+});
+
+svg.addEventListener('pointermove',e=>{
+  if(playing) return;
+  const p=toField(e); if(!p) return;
+  if(sketch){
+    const last=sketch[sketch.length-1];
+    if(Math.hypot(p[0]-last[0],p[1]-last[1])>6){ sketch.push(p); renderChalk(); }
+  }else if(drag){
+    positions[drag.id]=[p[0]+drag.dx,p[1]+drag.dy];
+    render();
+  }
+});
+
+function endPointer(){
+  if(sketch && sketch.length<3){ chalk.pop(); renderChalk(); }
+  if(sketch||drag) saveBoard();
+  sketch=null; drag=null;
+}
+svg.addEventListener('pointerup',endPointer);
+svg.addEventListener('pointercancel',endPointer);
+
+/* ================= Toolbar ================= */
+const $=id=>document.getElementById(id);
+
+function setMode(m){
+  mode=m;
+  $('modeMove').classList.toggle('on',m==='move');
+  $('modeDraw').classList.toggle('on',m==='draw');
+}
+$('modeMove').onclick=()=>setMode('move');
+$('modeDraw').onclick=()=>setMode('draw');
+
+$('btnUndo').onclick=()=>{ chalk.pop(); renderChalk(); saveBoard(); };
+$('btnClear').onclick=()=>{ chalk=[]; renderChalk(); saveBoard(); };
+
+$('btnNames').onclick=()=>{
+  namesOn=!namesOn;
+  $('btnNames').classList.toggle('on',namesOn);
+  render(); saveBoard();
+};
+
+function snapshot(){
+  const s={}; for(const id in positions) s[id]=positions[id].slice();
+  return s;
+}
+function updateStepUI(){
+  $('stepBadge').textContent = steps.length ? steps.length+(steps.length===1?' step':' steps') : '';
+  $('btnClearSteps').style.display = steps.length ? '' : 'none';
+}
+$('btnStep').onclick=()=>{
+  steps.push(snapshot());
+  updateStepUI(); saveBoard();
+  toast('Step '+steps.length+' saved'+(steps.length===1?' — move players, then add step 2':''));
+};
+$('btnClearSteps').onclick=()=>{ steps=[]; updateStepUI(); saveBoard(); };
+
+/* ================= Animation ================= */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playToken=0;
+
+function lerpPositions(a,b,t){
+  const e = t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;   // easeInOutCubic
+  for(const id in positions){
+    const p0=a[id]||positions[id], p1=b[id]||p0;
+    positions[id]=[p0[0]+(p1[0]-p0[0])*e, p0[1]+(p1[1]-p0[1])*e];
+  }
+  render();
+}
+
+function play(){
+  if(playing){ playToken++; playing=false; $('btnPlay').classList.remove('on'); return; }
+  if(steps.length<2){ toast('Set the field, tap STEP + — move players — tap STEP + again. Then press PLAY.'); return; }
+  playing=true; $('btnPlay').classList.add('on');
+  const token=++playToken;
+  const seq=steps.map(s=>{
+    const c={}; for(const id in s) c[id]=s[id].slice(); return c;
+  });
+  const DUR = reduceMotion?0:850, PAUSE=reduceMotion?600:280;
+  let i=0;
+  for(const id in seq[0]) positions[id]=seq[0][id].slice();
+  render();
+  function nextLeg(){
+    if(token!==playToken) return;
+    if(i>=seq.length-1){
+      playing=false; $('btnPlay').classList.remove('on'); saveBoard(); return;
+    }
+    const a=seq[i], b=seq[i+1];
+    const t0=performance.now();
+    function frame(now){
+      if(token!==playToken) return;
+      const t=DUR?Math.min(1,(now-t0)/DUR):1;
+      lerpPositions(a,b,t);
+      if(t<1) requestAnimationFrame(frame);
+      else { i++; setTimeout(nextLeg,PAUSE); }
+    }
+    requestAnimationFrame(frame);
+  }
+  setTimeout(nextLeg,PAUSE);
+}
+$('btnPlay').onclick=play;
+
+/* ================= Toast & tip ================= */
+let toastTimer;
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
+}
+function showTip(title,text){
+  $('tipTitle').textContent=title;
+  $('tipText').textContent=text;
+  $('tip').classList.add('show');
+}
+$('tipClose').onclick=()=>$('tip').classList.remove('show');
+
+/* ================= Reset ================= */
+$('btnReset').onclick=()=>{
+  playToken++; playing=false; $('btnPlay').classList.remove('on');
+  positions=defaultPositions(); chalk=[]; steps=[];
+  $('tip').classList.remove('show');
+  render(); renderChalk(); updateStepUI(); saveBoard();
+};
+
+/* ================= Lessons ================= */
+function pos(base, overrides){
+  const p=defaultPositions();
+  for(const id in overrides) p[id]=overrides[id].slice();
+  return p;
+}
+const LESSONS=[
+  {
+    title:'Where do we stand?',
+    sub:'Every position, in its home spot',
+    tip:'Every player has a home spot. Find yours before the play starts!',
+    chalk:[], steps:[],
+  },
+  {
+    title:'Run through first!',
+    sub:'Hit the ball, then run hard past the base',
+    tip:'Run FAST in a straight line — right past first base. Don’t stop on it, don’t slow down!',
+    chalk:[[[500,780],[600,680],[700,580],[755,540]]],
+    steps:[ pos(0,{}), pos(0,{BT:[745,552]}) ],
+  },
+  {
+    title:'Run the bases in order',
+    sub:'First, second, third, then home',
+    tip:'We always run this way around the diamond: first base, second base, third base, then home!',
+    chalk:[[[520,770],[670,625]],[[672,590],[520,442]],[[478,442],[328,590]],[[330,625],[480,772]]],
+    steps:[ pos(0,{}), pos(0,{BT:[690,610]}), pos(0,{BT:[500,420]}), pos(0,{BT:[310,610]}), pos(0,{BT:[500,800]}) ],
+  },
+  {
+    title:'Pick it up, throw to first',
+    sub:'Ground ball to the shortstop',
+    tip:'Fielders: scoop it up, turn your body, throw to first. Batter: run, run, run!',
+    chalk:[[[500,760],[460,640],[420,520]],[[440,480],[560,530],[650,585]]],
+    steps:[
+      pos(0,{}),
+      pos(0,{BALL:[415,495], BT:[600,690], '1B':[690,610]}),
+      pos(0,{BALL:[678,600], BT:[730,565], '1B':[690,610]}),
+    ],
+  },
+  {
+    title:'Step on second for the out',
+    sub:'Runner on first, ball to the shortstop',
+    tip:'If you catch the ball close to a base, run and step on the base before the runner gets there. That’s an out!',
+    chalk:[[[500,760],[455,640],[418,510]],[[430,478],[478,442]]],
+    steps:[
+      pos(0,{R1:[690,610]}),
+      pos(0,{R1:[600,520], BALL:[415,495], SS:[420,490], BT:[600,690]}),
+      pos(0,{R1:[552,470], BALL:[502,428], SS:[492,438], BT:[700,600]}),
+    ],
+  },
+  {
+    title:'Big hit? Throw it in!',
+    sub:'Outfielders get the ball back fast',
+    tip:'When the ball goes far, don’t chase the runner — throw the ball in to second base, quick as you can!',
+    chalk:[[[500,760],[500,540],[500,320],[500,230]],[[490,240],[498,360],[502,432]]],
+    steps:[
+      pos(0,{}),
+      pos(0,{BALL:[505,215], CF:[500,195], BT:[690,610], '2B':[520,435]}),
+      pos(0,{BALL:[505,428], CF:[500,215], BT:[690,610], '2B':[520,435]}),
+    ],
+  },
+];
+
+function loadLesson(les){
+  playToken++; playing=false; $('btnPlay').classList.remove('on');
+  positions = les.steps.length ? JSON.parse(JSON.stringify(les.steps[0])) : defaultPositions();
+  chalk = JSON.parse(JSON.stringify(les.chalk));
+  steps = JSON.parse(JSON.stringify(les.steps));
+  namesOn=true; $('btnNames').classList.add('on');
+  render(); renderChalk(); updateStepUI(); saveBoard();
+  showTip(les.title, les.tip);
+  closePanel();
+  if(steps.length>1) toast('Press PLAY to watch this play');
+}
+
+/* ================= Saved plays ================= */
+const PLAYS_KEY='chalktalk.plays.v1', BOARD_KEY='chalktalk.board.v1';
+function loadStore(key,fallback){
+  try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback; }
+  catch(e){ return fallback; }
+}
+function saveStore(key,val){
+  try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){}
+}
+let plays = loadStore(PLAYS_KEY,[]);
+
+let saveTimer;
+function saveBoard(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    saveStore(BOARD_KEY,{positions,chalk,steps,namesOn});
+  },300);
+}
+(function restoreBoard(){
+  const b=loadStore(BOARD_KEY,null);
+  if(b && b.positions){
+    const d=defaultPositions();
+    for(const id in d) if(b.positions[id]) d[id]=b.positions[id];
+    positions=d;
+    chalk=Array.isArray(b.chalk)?b.chalk:[];
+    steps=Array.isArray(b.steps)?b.steps:[];
+    namesOn=b.namesOn!==false;
+  }
+  $('btnNames').classList.toggle('on',namesOn);
+})();
+
+/* ================= Panel ================= */
+let panelTab='lessons', confirmIdx=-1;
+function openPanel(tab){
+  panelTab=tab; confirmIdx=-1;
+  renderPanel();
+  $('panel').classList.add('show');
+  $('scrim').classList.add('show');
+}
+function closePanel(){
+  $('panel').classList.remove('show');
+  $('scrim').classList.remove('show');
+}
+$('btnLessons').onclick=()=>openPanel('lessons');
+$('btnPlays').onclick=()=>openPanel('plays');
+$('panelClose').onclick=closePanel;
+$('scrim').onclick=closePanel;
+$('tabLessons').onclick=()=>{panelTab='lessons';renderPanel();};
+$('tabPlays').onclick=()=>{panelTab='plays';confirmIdx=-1;renderPanel();};
+
+function renderPanel(){
+  $('tabLessons').classList.toggle('on',panelTab==='lessons');
+  $('tabPlays').classList.toggle('on',panelTab==='plays');
+  const body=$('panelBody');
+  body.textContent='';
+  if(panelTab==='lessons'){
+    LESSONS.forEach(les=>{
+      const b=document.createElement('button');
+      b.className='card';
+      b.innerHTML='<div class="c-title"></div><div class="c-sub"></div>'+
+        (les.steps.length>1?'<span class="c-anim">ANIMATED</span>':'');
+      b.querySelector('.c-title').textContent=les.title;
+      b.querySelector('.c-sub').textContent=les.sub;
+      b.onclick=()=>loadLesson(les);
+      body.appendChild(b);
+    });
+  }else{
+    const row=document.createElement('div');
+    row.className='save-row';
+    row.innerHTML='<input id="playName" placeholder="Name this play…" maxlength="40"><button id="btnSave">SAVE</button>';
+    body.appendChild(row);
+    row.querySelector('#btnSave').onclick=()=>{
+      const inp=row.querySelector('#playName');
+      const name=inp.value.trim()||('Play '+(plays.length+1));
+      plays.unshift({name, when:new Date().toLocaleDateString(),
+        board:{positions:snapshot(),chalk:JSON.parse(JSON.stringify(chalk)),
+               steps:JSON.parse(JSON.stringify(steps)),namesOn}});
+      saveStore(PLAYS_KEY,plays);
+      inp.value='';
+      renderPanel();
+      toast('Saved “'+name+'”');
+    };
+    if(!plays.length){
+      const e=document.createElement('div');
+      e.className='empty';
+      e.textContent='No saved plays yet. Set up the field the way you want, then save it here for next practice.';
+      body.appendChild(e);
+    }
+    plays.forEach((pl,idx)=>{
+      const wrap=document.createElement('div');
+      wrap.className='play-row';
+      const b=document.createElement('button');
+      b.className='card';
+      b.innerHTML='<div class="c-title"></div><div class="c-sub"></div>';
+      b.querySelector('.c-title').textContent=pl.name;
+      b.querySelector('.c-sub').textContent='Saved '+pl.when+
+        (pl.board.steps.length>1?' · '+pl.board.steps.length+' steps':'');
+      b.onclick=()=>{
+        playToken++; playing=false; $('btnPlay').classList.remove('on');
+        const d=defaultPositions();
+        for(const id in d) if(pl.board.positions[id]) d[id]=pl.board.positions[id];
+        positions=d;
+        chalk=JSON.parse(JSON.stringify(pl.board.chalk||[]));
+        steps=JSON.parse(JSON.stringify(pl.board.steps||[]));
+        namesOn=pl.board.namesOn!==false;
+        $('btnNames').classList.toggle('on',namesOn);
+        $('tip').classList.remove('show');
+        render(); renderChalk(); updateStepUI(); saveBoard();
+        closePanel();
+        toast('Loaded “'+pl.name+'”');
+      };
+      const del=document.createElement('button');
+      del.className='del'; del.textContent='×';
+      del.setAttribute('aria-label','Delete '+pl.name);
+      del.onclick=()=>{
+        if(confirmIdx===idx){
+          plays.splice(idx,1); saveStore(PLAYS_KEY,plays); confirmIdx=-1; renderPanel();
+        }else{
+          confirmIdx=idx; renderPanel();
+        }
+      };
+      if(confirmIdx===idx){ del.classList.add('confirm'); del.textContent='SURE?'; }
+      wrap.appendChild(b); wrap.appendChild(del);
+      body.appendChild(wrap);
+    });
+  }
+}
+
+/* ================= Boot ================= */
+render(); renderChalk(); updateStepUI();
+if(!loadStore(BOARD_KEY,null)){
+  showTip('Welcome, Coach!','Drag players with a finger. Tap DRAW to chalk arrows. Open LESSONS for ready-made plays for your 6U team.');
+}
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
