@@ -284,9 +284,10 @@ const FIELDERS = [
   {id:'2B', name:'Second Base',  x:598, y:478},
   {id:'SS', name:'Shortstop',    x:402, y:478},
   {id:'3B', name:'Third Base',   x:332, y:572},
-  {id:'LF', name:'Left Field',   x:235, y:300},
-  {id:'CF', name:'Center Field', x:500, y:195},
-  {id:'RF', name:'Right Field',  x:765, y:300},
+  {id:'LF', name:'Left Field',   x:264, y:337},
+  {id:'LC', name:'Left Center',  x:419, y:286},
+  {id:'RC', name:'Right Center', x:581, y:286},
+  {id:'RF', name:'Right Field',  x:736, y:337},
 ];
 const RUNNERS = [
   {id:'BT', name:'Batter', x:452, y:822},
@@ -325,7 +326,7 @@ function buildPark(){
   el('rect',{x:0,y:0,width:1000,height:940,fill:'#4c8f4f'},svg);
   // mow stripes: soft arcs centered on home
   const stripes = el('g',{fill:'none',stroke:'rgba(255,255,255,0.05)','stroke-width':34},svg);
-  for(let r=120;r<=640;r+=68){
+  for(let r=120;r<=730;r+=68){
     el('path',{d:`M ${500-r} 800 A ${r} ${r} 0 0 1 ${500+r} 800`},stripes);
   }
   // dirt infield
@@ -338,12 +339,12 @@ function buildPark(){
   el('circle',{cx:500,cy:640,r:34,fill:'#bd854f'},svg);
   el('rect',{x:491,y:636,width:18,height:6,rx:2,fill:'#fdfaf1'},svg);
   // fence
-  el('path',{d:'M120,420 A537,537 0 0 1 880,420',fill:'none',stroke:'#2c5232','stroke-width':16,'stroke-linecap':'round'},svg);
-  el('path',{d:'M120,420 A537,537 0 0 1 880,420',fill:'none',stroke:'#f0d99b','stroke-width':4,'stroke-linecap':'round'},svg);
+  el('path',{d:'M75,375 A601,601 0 0 1 925,375',fill:'none',stroke:'#2c5232','stroke-width':16,'stroke-linecap':'round'},svg);
+  el('path',{d:'M75,375 A601,601 0 0 1 925,375',fill:'none',stroke:'#f0d99b','stroke-width':4,'stroke-linecap':'round'},svg);
   // foul lines
   const lines = el('g',{stroke:'#fdfaf1','stroke-width':6,'stroke-linecap':'round',fill:'none'},svg);
-  el('line',{x1:500,y1:800,x2:143,y2:443},lines);
-  el('line',{x1:500,y1:800,x2:857,y2:443},lines);
+  el('line',{x1:500,y1:800,x2:85,y2:385},lines);
+  el('line',{x1:500,y1:800,x2:915,y2:385},lines);
   // base paths
   el('polygon',{points:'500,800 690,610 500,420 310,610',fill:'none',stroke:'#fdfaf1','stroke-width':6,'stroke-linejoin':'round'},svg);
   // bases
@@ -632,11 +633,11 @@ const LESSONS=[
     title:'Big hit? Throw it in!',
     sub:'Outfielders get the ball back fast',
     tip:'When the ball goes far, don’t chase the runner — throw the ball in to second base, quick as you can!',
-    chalk:[[[500,760],[500,540],[500,320],[500,230]],[[490,240],[498,360],[502,432]]],
+    chalk:[[[500,760],[540,560],[575,380],[592,285]],[[580,295],[520,440]]],
     steps:[
       pos(0,{}),
-      pos(0,{BALL:[505,215], CF:[500,195], BT:[690,610], '2B':[520,435]}),
-      pos(0,{BALL:[505,428], CF:[500,215], BT:[690,610], '2B':[520,435]}),
+      pos(0,{BALL:[594,272], RC:[585,284], BT:[690,610], '2B':[520,435]}),
+      pos(0,{BALL:[505,428], RC:[585,284], BT:[690,610], '2B':[520,435]}),
     ],
   },
 ];
