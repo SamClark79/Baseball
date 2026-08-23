@@ -12,7 +12,8 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
 
 - **Touch tactical board** — 10 fielders (standard 6U setup with four
   outfielders: Left Field, Left Center, Right Center, Right Field), a batter,
-  3 bench runners, and a ball, all draggable with a finger. Toggle position
+  two bench crews (three green Base Invaders with antennae and three red
+  opposing runners), and a ball, all draggable with a finger. Toggle position
   names on/off.
 - **Chalk arrows** — tap DRAW and sketch arrows on the field; UNDO and CLEAR
   to tidy up.

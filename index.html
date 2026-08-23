@@ -306,10 +306,13 @@ const FIELDERS = [
   {id:'RF', name:'Right Field',  x:736, y:337},
 ];
 const RUNNERS = [
-  {id:'BT', name:'Batter', x:452, y:822},
-  {id:'R1', name:'Runner', x:822, y:888},
-  {id:'R2', name:'Runner', x:878, y:888},
-  {id:'R3', name:'Runner', x:934, y:888},
+  {id:'BT', name:'Batter', team:'home', x:452, y:822},
+  {id:'G1', name:'Base Invader', team:'home', label:'1', x:66,  y:888},
+  {id:'G2', name:'Base Invader', team:'home', label:'2', x:122, y:888},
+  {id:'G3', name:'Base Invader', team:'home', label:'3', x:178, y:888},
+  {id:'R1', name:'Runner', team:'away', label:'1', x:822, y:888},
+  {id:'R2', name:'Runner', team:'away', label:'2', x:878, y:888},
+  {id:'R3', name:'Runner', team:'away', label:'3', x:934, y:888},
 ];
 const BALL_START = {x:500, y:775};
 
@@ -373,10 +376,13 @@ function buildPark(){
   // batter's boxes
   el('rect',{x:437,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
   el('rect',{x:533,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
-  // dugout bench for spare runners
+  // dugout benches: home team (Base Invaders) and the opposing runners
+  el('rect',{x:20,y:858,width:190,height:60,rx:12,fill:'rgba(13,31,36,0.4)'},svg);
+  el('text',{x:115,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
+    'font-family':"'Nunito',sans-serif",fill:'#c8ef3a'},svg).textContent='BASE INVADERS';
   el('rect',{x:790,y:858,width:190,height:60,rx:12,fill:'rgba(13,31,36,0.4)'},svg);
   el('text',{x:885,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
-    'font-family':"'Nunito',sans-serif",fill:'rgba(253,250,241,0.8)'},svg).textContent='RUNNERS';
+    'font-family':"'Nunito',sans-serif",fill:'#ff9585'},svg).textContent='OTHER TEAM';
 }
 buildPark();
 
@@ -395,11 +401,12 @@ function makePiece(def, kind){
     el('path',{d:'M 8 -12 Q 2 0 8 12',fill:'none',stroke:'#2f9ddb','stroke-width':2.5,'stroke-linecap':'round'},g);
   }else{
     const fielder = kind==='fielder';
-    el('circle',{r:30,fill:fielder?'#1877b8':'#b4e015',stroke:'#fdfaf1','stroke-width':4},g);
-    const initials = fielder ? def.id : (def.id==='BT' ? 'B' : 'R');
+    const away = def.team==='away';
+    el('circle',{r:30,fill:fielder?'#1877b8':(away?'#d94330':'#b4e015'),stroke:'#fdfaf1','stroke-width':4},g);
+    const initials = fielder ? def.id : (def.id==='BT' ? 'B' : (def.label||'R'));
     el('text',{y:9,'text-anchor':'middle','font-size':initials.length>1?22:26,'font-weight':800,
       'font-family':"'Graduate','Arial Black',sans-serif",
-      fill:fielder?'#ffffff':'#0d1f24'},g).textContent = initials;
+      fill:(fielder||away)?'#ffffff':'#0d1f24'},g).textContent = initials;
     if(fielder || def.id==='BT'){
       el('text',{class:'plabel',y:56,'text-anchor':'middle','font-size':21,'font-weight':800,
         'font-family':"'Nunito',sans-serif",fill:'#ffffff',stroke:'#274a2a','stroke-width':4,
