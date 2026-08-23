@@ -306,10 +306,10 @@ const FIELDERS = [
   {id:'RF', name:'Right Field',  x:736, y:337},
 ];
 const RUNNERS = [
-  {id:'BT', name:'Batter', team:'home', x:452, y:822},
-  {id:'G1', name:'Base Invader', team:'home', label:'1', x:66,  y:888},
-  {id:'G2', name:'Base Invader', team:'home', label:'2', x:122, y:888},
-  {id:'G3', name:'Base Invader', team:'home', label:'3', x:178, y:888},
+  {id:'BT', name:'Batter', team:'home', x:44,  y:888},
+  {id:'G1', name:'Base Invader', team:'home', label:'1', x:100, y:888},
+  {id:'G2', name:'Base Invader', team:'home', label:'2', x:156, y:888},
+  {id:'G3', name:'Base Invader', team:'home', label:'3', x:212, y:888},
   {id:'R1', name:'Runner', team:'away', label:'1', x:822, y:888},
   {id:'R2', name:'Runner', team:'away', label:'2', x:878, y:888},
   {id:'R3', name:'Runner', team:'away', label:'3', x:934, y:888},
@@ -377,8 +377,8 @@ function buildPark(){
   el('rect',{x:437,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
   el('rect',{x:533,y:778,width:30,height:46,rx:3,fill:'none',stroke:'#fdfaf1','stroke-width':4},svg);
   // dugout benches: home team (Base Invaders) and the opposing runners
-  el('rect',{x:20,y:858,width:190,height:60,rx:12,fill:'rgba(13,31,36,0.4)'},svg);
-  el('text',{x:115,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
+  el('rect',{x:12,y:858,width:230,height:60,rx:12,fill:'rgba(13,31,36,0.4)'},svg);
+  el('text',{x:127,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
     'font-family':"'Nunito',sans-serif",fill:'#c8ef3a'},svg).textContent='BASE INVADERS';
   el('rect',{x:790,y:858,width:190,height:60,rx:12,fill:'rgba(13,31,36,0.4)'},svg);
   el('text',{x:885,y:850,'text-anchor':'middle','font-size':16,'font-weight':800,
@@ -407,7 +407,7 @@ function makePiece(def, kind){
     el('text',{y:9,'text-anchor':'middle','font-size':initials.length>1?22:26,'font-weight':800,
       'font-family':"'Graduate','Arial Black',sans-serif",
       fill:(fielder||away)?'#ffffff':'#0d1f24'},g).textContent = initials;
-    if(fielder || def.id==='BT'){
+    if(fielder){
       el('text',{class:'plabel',y:56,'text-anchor':'middle','font-size':21,'font-weight':800,
         'font-family':"'Nunito',sans-serif",fill:'#ffffff',stroke:'#274a2a','stroke-width':4,
         'paint-order':'stroke','stroke-linejoin':'round'},g).textContent = def.name;
@@ -621,14 +621,14 @@ const LESSONS=[
     sub:'Hit the ball, then run hard past the base',
     tip:'Run FAST in a straight line — right past first base. Don’t stop on it, don’t slow down!',
     chalk:[[[500,780],[600,680],[700,580],[755,540]]],
-    steps:[ pos(0,{}), pos(0,{BT:[745,552]}) ],
+    steps:[ pos(0,{BT:[452,822]}), pos(0,{BT:[745,552]}) ],
   },
   {
     title:'Run the bases in order',
     sub:'First, second, third, then home',
     tip:'We always run this way around the diamond: first base, second base, third base, then home!',
     chalk:[[[520,770],[670,625]],[[672,590],[520,442]],[[478,442],[328,590]],[[330,625],[480,772]]],
-    steps:[ pos(0,{}), pos(0,{BT:[690,610]}), pos(0,{BT:[500,420]}), pos(0,{BT:[310,610]}), pos(0,{BT:[500,800]}) ],
+    steps:[ pos(0,{BT:[452,822]}), pos(0,{BT:[690,610]}), pos(0,{BT:[500,420]}), pos(0,{BT:[310,610]}), pos(0,{BT:[500,800]}) ],
   },
   {
     title:'Pick it up, throw to first',
@@ -636,7 +636,7 @@ const LESSONS=[
     tip:'Fielders: scoop it up, turn your body, throw to first. Batter: run, run, run!',
     chalk:[[[500,760],[460,640],[420,520]],[[440,480],[560,530],[650,585]]],
     steps:[
-      pos(0,{}),
+      pos(0,{BT:[452,822]}),
       pos(0,{BALL:[415,495], BT:[600,690], '1B':[690,610]}),
       pos(0,{BALL:[678,600], BT:[730,565], '1B':[690,610]}),
     ],
@@ -647,7 +647,7 @@ const LESSONS=[
     tip:'If you catch the ball close to a base, run and step on the base before the runner gets there. That’s an out!',
     chalk:[[[500,760],[455,640],[418,510]],[[430,478],[478,442]]],
     steps:[
-      pos(0,{R1:[690,610]}),
+      pos(0,{R1:[690,610], BT:[452,822]}),
       pos(0,{R1:[600,520], BALL:[415,495], SS:[420,490], BT:[600,690]}),
       pos(0,{R1:[552,470], BALL:[502,428], SS:[492,438], BT:[700,600]}),
     ],
@@ -658,7 +658,7 @@ const LESSONS=[
     tip:'When the ball goes far, don’t chase the runner — throw the ball in to second base, quick as you can!',
     chalk:[[[500,760],[540,560],[575,380],[592,285]],[[580,295],[520,440]]],
     steps:[
-      pos(0,{}),
+      pos(0,{BT:[452,822]}),
       pos(0,{BALL:[594,272], RC:[585,284], BT:[690,610], '2B':[520,435]}),
       pos(0,{BALL:[505,428], RC:[585,284], BT:[690,610], '2B':[520,435]}),
     ],
