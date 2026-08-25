@@ -412,8 +412,8 @@ function buildPark(){
   for(let r=120;r<=730;r+=68){
     el('path',{d:`M ${500-r} 800 A ${r} ${r} 0 0 1 ${500+r} 800`},stripes);
   }
-  // dirt infield
-  el('circle',{cx:500,cy:612,r:302,fill:'#c9925e'},svg);
+  // dirt infield — a skinned arc that hugs the bases, so the outfield stays green
+  el('circle',{cx:500,cy:610,r:228,fill:'#c9925e'},svg);
   // inner grass diamond
   el('polygon',{points:'500,742 632,610 500,478 368,610',fill:'#4c8f4f'},svg);
   // home-plate dirt circle
