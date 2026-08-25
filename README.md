@@ -16,10 +16,12 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
   opposing runners), and a ball, all draggable with a finger. Toggle position
   names on/off.
 - **Chalk arrows in six colors** — tap DRAW and sketch arrows on the field;
-  pick a color from the swatches; UNDO and CLEAR to tidy up.
+  pick a color from the swatches; press and hold DRAW to switch between solid
+  and dotted lines; UNDO and CLEAR to tidy up.
 - **Ball trails** — press and hold the ball to choose GROUND BALL (dotted),
   FLY BALL (arc), or LINE DRIVE (straight), then drag the ball to where it
-  goes and the hit is drawn behind it.
+  goes and the hit is drawn behind it. Trails render as a glowing Statcast-style
+  tracer in MLB tracker yellow; picking any other swatch colour overrides it.
 - **Outs box** — a scoreboard-style box in the corner of the field; tap a dot
   to set 0-3 outs, tap the lit dot again to back off one.
 - **Signal band** — a green / yellow / red band across the top; tap a colour to
