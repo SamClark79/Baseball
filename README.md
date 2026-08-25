@@ -25,8 +25,10 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
 - **Signal band** — a green / yellow / red band across the top; tap a colour to
   light it up, tap it again to clear.
 - **Cones** — tap CONE + to drop a traffic cone on the field for laying out
-  drills, drag it anywhere, and press and hold a cone to take it off. Add as
-  many as you need; they save with the board and with named plays.
+  drills, drag it anywhere, and press and hold a cone to take it off. A
+  CLEAR CONES button appears under CONE + whenever cones are on the field and
+  sweeps them all at once. Add as many as you need; they save with the board
+  and with named plays.
 - **Situations** — one tap sets up the bases for teaching: runner on 1st,
   1st & 2nd, bases loaded, 2nd, 2nd & 3rd, or 3rd — each available as an
   offense drill (your green runners on base) or a defense drill (the other

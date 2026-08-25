@@ -125,7 +125,7 @@
   /* ── Main layout ────────────────────────── */
   main{flex:1; display:flex; min-height:0;}
   #rail{
-    flex:none; width:104px; display:flex; flex-direction:column; gap:6px;
+    flex:none; width:104px; display:flex; flex-direction:column; gap:4px;
     padding:12px 10px calc(12px + env(safe-area-inset-bottom)) 12px;
     background:var(--ink); overflow-y:auto;
   }
@@ -133,10 +133,10 @@
     font-family:'Graduate','Arial Black',sans-serif; letter-spacing:.06em;
     font-size:12px; color:var(--fog);
     background:var(--ink-2); border:2px solid var(--ink-3);
-    border-radius:14px; padding:8px 6px; cursor:pointer;
+    border-radius:14px; padding:7px 6px; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:5px;
   }
-  .tbtn svg{width:22px; height:22px; display:block;}
+  .tbtn svg{width:20px; height:20px; display:block;}
   .tbtn.on{background:var(--green); border-color:var(--green-deep); color:var(--ink);}
   .tbtn:active{transform:translateY(1px);}
   .tbtn[disabled]{opacity:.4; pointer-events:none;}
@@ -175,10 +175,14 @@
     background:var(--blue-deep); border:2px solid var(--blue-ink); color:#fff;
   }
   .lineup button.ghost{background:var(--ink); border-color:var(--ink-3); color:var(--fog-dim);}
-  #stepBadge{
-    font-size:11px; font-weight:800; color:var(--green); letter-spacing:.05em;
-    text-align:center; font-family:'Nunito',sans-serif;
+  .minibtn{
+    display:none; width:100%; cursor:pointer;
+    font-family:'Graduate','Arial Black',sans-serif; font-size:10px; letter-spacing:.04em;
+    color:#ffb98a; background:transparent; border:2px solid #8a4a22;
+    border-radius:9px; padding:5px 2px;
   }
+  .minibtn.show{display:block;}
+  .minibtn:active{background:#8a4a22; color:#fff;}
 
   #stage{flex:1; min-width:0; min-height:0; position:relative; background:#3c6f3f;}
   #field{
@@ -326,6 +330,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l6 15H6l6-15z"/><path d="M3 21h18"/><path d="M9.4 12h5.2"/></svg>
       CONE +
     </button>
+    <button class="minibtn" id="btnClearCones">CLEAR CONES</button>
     <button class="tbtn" id="btnStep">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 6V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2M10 13h.01M7 16l3-3 4 4"/></svg>
       STEP +
@@ -334,11 +339,7 @@
       <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 4l13 8-13 8z"/></svg>
       PLAY
     </button>
-    <div id="stepBadge"></div>
-    <button class="tbtn" id="btnClearSteps" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
-      NO STEPS
-    </button>
+    <button class="minibtn" id="btnClearSteps">CLEAR STEPS</button>
   </nav>
 
   <div id="stage">
@@ -549,16 +550,30 @@ function syncCones(){
   });
   Object.keys(positions).filter(isCone).forEach(id=>{ if(!pieceEls[id]) makeCone(id); });
 }
+function coneCount(){ return Object.keys(positions).filter(isCone).length; }
+function updateConeUI(){
+  const n=coneCount(), b=$('btnClearCones');
+  b.classList.toggle('show', n>0);
+  b.textContent = n===1 ? 'CLEAR 1 CONE' : 'CLEAR '+n+' CONES';
+}
 function addCone(){
   let n=1; while(positions['K'+n]) n++;
-  const i=Object.keys(positions).filter(isCone).length;
+  const i=coneCount();
   positions['K'+n]=[230+(i%5)*52, 706+Math.floor(i/5)*54];   // drop into open ground
-  syncCones(); render(); saveBoard();
+  syncCones(); render(); updateConeUI(); saveBoard();
+  if(i===0) toast('Drag cones where you need them. Hold one to remove it.');
 }
 function removeCone(id){
   delete positions[id];
-  syncCones(); render(); saveBoard();
+  syncCones(); render(); updateConeUI(); saveBoard();
   toast('Cone removed');
+}
+function clearCones(){
+  const n=coneCount();
+  if(!n) return;
+  Object.keys(positions).filter(isCone).forEach(id=>delete positions[id]);
+  syncCones(); render(); updateConeUI(); saveBoard();
+  toast(n===1?'Cone cleared':'All '+n+' cones cleared');
 }
 
 function render(){
@@ -759,10 +774,12 @@ function snapshot(){
   return s;
 }
 function updateStepUI(){
-  $('stepBadge').textContent = steps.length ? steps.length+(steps.length===1?' step':' steps') : '';
-  $('btnClearSteps').style.display = steps.length ? '' : 'none';
+  const b=$('btnClearSteps');
+  b.classList.toggle('show', steps.length>0);
+  b.textContent = 'CLEAR '+steps.length+(steps.length===1?' STEP':' STEPS');
 }
 $('btnCone').onclick=addCone;
+$('btnClearCones').onclick=clearCones;
 
 function renderOuts(){
   $('outs').querySelectorAll('.dot').forEach(d=>{
@@ -863,7 +880,7 @@ $('btnReset').onclick=()=>{
   positions=defaultPositions(); chalk=[]; steps=[];
   outs=0; signal=null;
   $('tip').classList.remove('show');
-  syncCones(); renderOuts(); renderBand();
+  syncCones(); renderOuts(); renderBand(); updateConeUI();
   render(); renderChalk(); updateStepUI(); saveBoard();
 };
 
@@ -932,7 +949,7 @@ const LESSONS=[
 function loadLesson(les){
   playToken++; playing=false; $('btnPlay').classList.remove('on');
   positions = les.steps.length ? JSON.parse(JSON.stringify(les.steps[0])) : defaultPositions();
-  syncCones();
+  syncCones(); updateConeUI();
   chalk = JSON.parse(JSON.stringify(les.chalk));
   steps = JSON.parse(JSON.stringify(les.steps));
   namesOn=true; $('btnNames').classList.add('on');   // lessons name the positions
@@ -976,7 +993,7 @@ function loadSituation(state, side){
   state.bases.forEach((b,i)=>{ p[ids[i]]=[b[0],b[1]]; });
   if(side==='defense' && state.bases.includes(FIRST)) p['1B']=[750,580];  // holding the runner on
   positions=p; chalk=[]; steps=[];
-  syncCones(); render(); renderChalk(); updateStepUI(); saveBoard();
+  syncCones(); render(); renderChalk(); updateStepUI(); updateConeUI(); saveBoard();
   showTip(state.title, (side==='offense'?OFFENSE_TIPS:DEFENSE_TIPS)[state.key]);
   closePanel();
 }
@@ -1152,7 +1169,7 @@ function renderPanel(){
         for(const id in d) if(pl.board.positions[id]) d[id]=pl.board.positions[id];
         for(const id in pl.board.positions) if(isCone(id)) d[id]=pl.board.positions[id];
         positions=d;
-        syncCones();
+        syncCones(); updateConeUI();
         chalk=JSON.parse(JSON.stringify(pl.board.chalk||[])).map(normChalk);
         steps=JSON.parse(JSON.stringify(pl.board.steps||[]));
         namesOn=!!pl.board.namesOn;
@@ -1182,7 +1199,7 @@ function renderPanel(){
 /* ================= Boot ================= */
 document.getElementById('brandMark').src=MASCOT;
 if(!loadStore(BOARD_KEY,null)) positions=defaultPositions();
-syncCones(); renderOuts(); renderBand();
+syncCones(); renderOuts(); renderBand(); updateConeUI();
 render(); renderChalk(); updateStepUI();
 if(!loadStore(BOARD_KEY,null)){
   showTip('Welcome, Coach!','Drag players with a finger. Hold the ball to draw a hit. Tap DRAW to chalk arrows, or open SITUATIONS to set up the bases.');
