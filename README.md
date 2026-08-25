@@ -15,8 +15,18 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
   two bench crews (three green Base Invaders with antennae and three red
   opposing runners), and a ball, all draggable with a finger. Toggle position
   names on/off.
-- **Chalk arrows** — tap DRAW and sketch arrows on the field; UNDO and CLEAR
-  to tidy up.
+- **Chalk arrows in six colors** — tap DRAW and sketch arrows on the field;
+  pick a color from the swatches; UNDO and CLEAR to tidy up.
+- **Ball trails** — press and hold the ball to choose GROUND BALL (dotted),
+  FLY BALL (arc), or LINE DRIVE (straight), then drag the ball to where it
+  goes and the hit is drawn behind it.
+- **Situations** — one tap sets up the bases for teaching: runner on 1st,
+  1st & 2nd, bases loaded, 2nd, 2nd & 3rd, or 3rd — each available as an
+  offense drill (your green runners on base) or a defense drill (the other
+  team on base), with a coaching tip for each.
+- **My lineup** — arrange the fielders the way your team actually plays, then
+  save it in the Situations tab; RESET and every Situation use it from then on.
+  Position names are off by default and toggle on with NAMES.
 - **Animated plays** — tap STEP + to snapshot the field, move the players, add
   more steps, then press PLAY to watch everyone move.
 - **6 built-in tee-ball lessons** — where to stand, run through first, run the
