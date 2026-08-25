@@ -20,6 +20,13 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
 - **Ball trails** — press and hold the ball to choose GROUND BALL (dotted),
   FLY BALL (arc), or LINE DRIVE (straight), then drag the ball to where it
   goes and the hit is drawn behind it.
+- **Outs box** — a scoreboard-style box in the corner of the field; tap a dot
+  to set 0-3 outs, tap the lit dot again to back off one.
+- **Signal band** — a green / yellow / red band across the top; tap a colour to
+  light it up, tap it again to clear.
+- **Cones** — tap CONE + to drop a traffic cone on the field for laying out
+  drills, drag it anywhere, and press and hold a cone to take it off. Add as
+  many as you need; they save with the board and with named plays.
 - **Situations** — one tap sets up the bases for teaching: runner on 1st,
   1st & 2nd, bases loaded, 2nd, 2nd & 3rd, or 3rd — each available as an
   offense drill (your green runners on base) or a defense drill (the other

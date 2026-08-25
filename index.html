@@ -77,6 +77,33 @@
   .hbtn.warn{border-color:var(--pink); color:#ffb9d9;}
   .hbtn:focus-visible,.tbtn:focus-visible,button:focus-visible{outline:3px solid var(--green); outline-offset:2px;}
 
+  /* ── Signal band ────────────────────────── */
+  #band{display:flex; gap:3px; flex:none; padding:0 3px 3px; background:var(--ink);}
+  #band button{
+    flex:1; height:26px; border:none; border-radius:5px; cursor:pointer;
+    opacity:.42; transition:opacity .15s ease, box-shadow .15s ease;
+  }
+  #band button.on{opacity:1; box-shadow:inset 0 0 0 3px rgba(255,255,255,.9);}
+  #band.set button:not(.on){opacity:.3;}
+  @media (prefers-reduced-motion:reduce){ #band button{transition:none;} }
+
+  /* ── Outs box ───────────────────────────── */
+  #outs{
+    position:absolute; left:14px; top:14px; z-index:5;
+    background:rgba(13,31,36,.86); border:2px solid var(--ink-3); border-radius:14px;
+    padding:8px 12px 10px; text-align:center; box-shadow:var(--shadow);
+  }
+  #outs .lbl{
+    font-family:'Graduate','Arial Black',sans-serif; font-size:11px; letter-spacing:.12em;
+    color:var(--fog-dim); display:block; margin-bottom:6px;
+  }
+  #outs .dots{display:flex; gap:8px;}
+  #outs .dot{
+    width:26px; height:26px; border-radius:50%; cursor:pointer; padding:0;
+    background:transparent; border:3px solid var(--fog-dim);
+  }
+  #outs .dot.on{background:var(--pink); border-color:#fff;}
+
   /* ── Tip banner ─────────────────────────── */
   #tip{
     display:none; align-items:center; gap:12px;
@@ -98,7 +125,7 @@
   /* ── Main layout ────────────────────────── */
   main{flex:1; display:flex; min-height:0;}
   #rail{
-    flex:none; width:104px; display:flex; flex-direction:column; gap:8px;
+    flex:none; width:104px; display:flex; flex-direction:column; gap:6px;
     padding:12px 10px calc(12px + env(safe-area-inset-bottom)) 12px;
     background:var(--ink); overflow-y:auto;
   }
@@ -106,15 +133,15 @@
     font-family:'Graduate','Arial Black',sans-serif; letter-spacing:.06em;
     font-size:12px; color:var(--fog);
     background:var(--ink-2); border:2px solid var(--ink-3);
-    border-radius:14px; padding:12px 6px; cursor:pointer;
+    border-radius:14px; padding:8px 6px; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; gap:5px;
   }
-  .tbtn svg{width:24px; height:24px; display:block;}
+  .tbtn svg{width:22px; height:22px; display:block;}
   .tbtn.on{background:var(--green); border-color:var(--green-deep); color:var(--ink);}
   .tbtn:active{transform:translateY(1px);}
   .tbtn[disabled]{opacity:.4; pointer-events:none;}
-  .rail-gap{height:6px; flex:none; border-top:2px solid var(--ink-2); margin:4px 6px;}
-  .swatches{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:2px 2px 4px;}
+  .rail-gap{height:2px; flex:none; border-top:2px solid var(--ink-2); margin:2px 6px;}
+  .swatches{display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:0 2px;}
   .swatch{
     width:100%; aspect-ratio:1; border-radius:9px; cursor:pointer;
     border:2px solid rgba(255,255,255,.25); padding:0;
@@ -258,6 +285,12 @@
   <button class="hbtn warn" id="btnReset">Reset</button>
 </header>
 
+<div id="band" role="group" aria-label="Signal colour">
+  <button data-sig="go"   style="background:#3fbf4a" aria-label="Green"></button>
+  <button data-sig="look" style="background:#f2c31d" aria-label="Yellow"></button>
+  <button data-sig="stop" style="background:#e4402f" aria-label="Red"></button>
+</div>
+
 <div id="tip">
   <span class="tip-title" id="tipTitle"></span>
   <span class="tip-text" id="tipText"></span>
@@ -289,6 +322,10 @@
       NAMES
     </button>
     <div class="rail-gap"></div>
+    <button class="tbtn" id="btnCone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l6 15H6l6-15z"/><path d="M3 21h18"/><path d="M9.4 12h5.2"/></svg>
+      CONE +
+    </button>
     <button class="tbtn" id="btnStep">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 6V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2M10 13h.01M7 16l3-3 4 4"/></svg>
       STEP +
@@ -306,6 +343,14 @@
 
   <div id="stage">
     <svg id="field" viewBox="0 0 1000 940" preserveAspectRatio="xMidYMid meet" aria-label="Baseball field board"></svg>
+    <div id="outs">
+      <span class="lbl">OUTS</span>
+      <div class="dots">
+        <button class="dot" data-out="1" aria-label="1 out"></button>
+        <button class="dot" data-out="2" aria-label="2 outs"></button>
+        <button class="dot" data-out="3" aria-label="3 outs"></button>
+      </div>
+    </div>
     <div id="ballMenu" hidden>
       <button data-kind="ground">GROUND BALL</button>
       <button data-kind="fly">FLY BALL</button>
@@ -395,6 +440,8 @@ const COLORS = [
   {name:'Black',       hex:'#101c24'},
 ];
 let drawColor = COLORS[0].hex;
+let outs = 0;          // 0-3, shown in the corner box
+let signal = null;     // 'go' | 'look' | 'stop' — the colour band at the top
 
 /* ================= Build the ballpark ================= */
 function el(tag, attrs, parent){
@@ -483,8 +530,40 @@ FIELDERS.forEach(f=>makePiece(f,'fielder'));
 RUNNERS.forEach(r=>makePiece(r,'runner'));
 makePiece({id:'BALL',name:'Ball',...BALL_START},'ball');
 
+// Traffic cone for marking out drills — flat art, sized well below a player chip.
+function makeCone(id){
+  const g = el('g',{class:'piece','data-id':id},pieceLayer);
+  el('circle',{r:34,fill:'transparent'},g);                       // easy finger target
+  el('polygon',{points:'-24,8 0,18 24,8 0,-2',fill:'#e2571a'},g);  // base
+  el('path',{d:'M -3 -42 L 3 -42 L 16 6 L -16 6 Z',fill:'#f97316'},g);
+  el('polygon',{points:'-7.9,-24 7.9,-24 10.6,-14 -10.6,-14',fill:'#fdf6ee'},g);
+  el('polygon',{points:'-13.3,-4 13.3,-4 15.5,4 -15.5,4',fill:'#fdf6ee'},g);
+  el('ellipse',{cx:0,cy:-42,rx:4,ry:1.6,fill:'#ffa04d'},g);
+  pieceLayer.insertBefore(g, pieceLayer.firstChild);               // cones sit under players
+  pieceEls[id]=g;
+}
+const isCone = id => /^K\d+$/.test(id);
+function syncCones(){
+  Object.keys(pieceEls).filter(isCone).forEach(id=>{
+    if(!positions[id]){ pieceEls[id].remove(); delete pieceEls[id]; }
+  });
+  Object.keys(positions).filter(isCone).forEach(id=>{ if(!pieceEls[id]) makeCone(id); });
+}
+function addCone(){
+  let n=1; while(positions['K'+n]) n++;
+  const i=Object.keys(positions).filter(isCone).length;
+  positions['K'+n]=[230+(i%5)*52, 706+Math.floor(i/5)*54];   // drop into open ground
+  syncCones(); render(); saveBoard();
+}
+function removeCone(id){
+  delete positions[id];
+  syncCones(); render(); saveBoard();
+  toast('Cone removed');
+}
+
 function render(){
   for(const id in pieceEls){
+    if(!positions[id]) continue;
     const [x,y]=positions[id];
     pieceEls[id].setAttribute('transform',`translate(${x} ${y})`);
     const lbl=pieceEls[id].querySelector('.plabel');
@@ -603,6 +682,9 @@ svg.addEventListener('pointerdown',e=>{
         lpFrom=p;
         lpTimer=setTimeout(()=>{ drag=null; cancelLongPress(); showBallMenu(); },480);
       }
+    }else if(isCone(id)){                             // hold a cone to take it off the field
+      lpFrom=p;
+      lpTimer=setTimeout(()=>{ drag=null; cancelLongPress(); removeCone(id); },480);
     }
   }
   svg.setPointerCapture(e.pointerId);
@@ -680,6 +762,35 @@ function updateStepUI(){
   $('stepBadge').textContent = steps.length ? steps.length+(steps.length===1?' step':' steps') : '';
   $('btnClearSteps').style.display = steps.length ? '' : 'none';
 }
+$('btnCone').onclick=addCone;
+
+function renderOuts(){
+  $('outs').querySelectorAll('.dot').forEach(d=>{
+    d.classList.toggle('on', Number(d.getAttribute('data-out'))<=outs);
+  });
+}
+$('outs').querySelectorAll('.dot').forEach(d=>{
+  d.onclick=()=>{
+    const n=Number(d.getAttribute('data-out'));
+    outs = (outs===n) ? n-1 : n;                     // tap the lit dot again to back off one
+    renderOuts(); saveBoard();
+  };
+});
+
+function renderBand(){
+  $('band').classList.toggle('set', !!signal);
+  $('band').querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-sig')===signal);
+  });
+}
+$('band').querySelectorAll('button').forEach(b=>{
+  b.onclick=()=>{
+    const s=b.getAttribute('data-sig');
+    signal = (signal===s) ? null : s;
+    renderBand(); saveBoard();
+  };
+});
+
 $('btnStep').onclick=()=>{
   steps.push(snapshot());
   updateStepUI(); saveBoard();
@@ -750,7 +861,9 @@ $('tipClose').onclick=()=>$('tip').classList.remove('show');
 $('btnReset').onclick=()=>{
   playToken++; playing=false; $('btnPlay').classList.remove('on');
   positions=defaultPositions(); chalk=[]; steps=[];
+  outs=0; signal=null;
   $('tip').classList.remove('show');
+  syncCones(); renderOuts(); renderBand();
   render(); renderChalk(); updateStepUI(); saveBoard();
 };
 
@@ -819,6 +932,7 @@ const LESSONS=[
 function loadLesson(les){
   playToken++; playing=false; $('btnPlay').classList.remove('on');
   positions = les.steps.length ? JSON.parse(JSON.stringify(les.steps[0])) : defaultPositions();
+  syncCones();
   chalk = JSON.parse(JSON.stringify(les.chalk));
   steps = JSON.parse(JSON.stringify(les.steps));
   namesOn=true; $('btnNames').classList.add('on');   // lessons name the positions
@@ -862,7 +976,7 @@ function loadSituation(state, side){
   state.bases.forEach((b,i)=>{ p[ids[i]]=[b[0],b[1]]; });
   if(side==='defense' && state.bases.includes(FIRST)) p['1B']=[750,580];  // holding the runner on
   positions=p; chalk=[]; steps=[];
-  render(); renderChalk(); updateStepUI(); saveBoard();
+  syncCones(); render(); renderChalk(); updateStepUI(); saveBoard();
   showTip(state.title, (side==='offense'?OFFENSE_TIPS:DEFENSE_TIPS)[state.key]);
   closePanel();
 }
@@ -883,7 +997,7 @@ let saveTimer;
 function saveBoard(){
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
-    saveStore(BOARD_KEY,{positions,chalk,steps,namesOn,drawColor});
+    saveStore(BOARD_KEY,{positions,chalk,steps,namesOn,drawColor,outs,signal});
   },300);
 }
 (function restoreBoard(){
@@ -891,8 +1005,11 @@ function saveBoard(){
   if(b && b.positions){
     const d=defaultPositions();
     for(const id in d) if(b.positions[id]) d[id]=b.positions[id];
+    for(const id in b.positions) if(isCone(id)) d[id]=b.positions[id];
     positions=d;
     chalk=(Array.isArray(b.chalk)?b.chalk:[]).map(normChalk);
+    outs=Math.min(3,Math.max(0,Number(b.outs)||0));
+    if(['go','look','stop'].includes(b.signal)) signal=b.signal;
     steps=Array.isArray(b.steps)?b.steps:[];
     namesOn=!!b.namesOn;
     if(b.drawColor && COLORS.some(c=>c.hex===b.drawColor)) drawColor=b.drawColor;
@@ -1033,7 +1150,9 @@ function renderPanel(){
         playToken++; playing=false; $('btnPlay').classList.remove('on');
         const d=defaultPositions();
         for(const id in d) if(pl.board.positions[id]) d[id]=pl.board.positions[id];
+        for(const id in pl.board.positions) if(isCone(id)) d[id]=pl.board.positions[id];
         positions=d;
+        syncCones();
         chalk=JSON.parse(JSON.stringify(pl.board.chalk||[])).map(normChalk);
         steps=JSON.parse(JSON.stringify(pl.board.steps||[]));
         namesOn=!!pl.board.namesOn;
@@ -1063,6 +1182,7 @@ function renderPanel(){
 /* ================= Boot ================= */
 document.getElementById('brandMark').src=MASCOT;
 if(!loadStore(BOARD_KEY,null)) positions=defaultPositions();
+syncCones(); renderOuts(); renderBand();
 render(); renderChalk(); updateStepUI();
 if(!loadStore(BOARD_KEY,null)){
   showTip('Welcome, Coach!','Drag players with a finger. Hold the ball to draw a hit. Tap DRAW to chalk arrows, or open SITUATIONS to set up the bases.');
