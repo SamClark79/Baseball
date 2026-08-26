@@ -15,9 +15,10 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
   two bench crews (three green Base Invaders with antennae and three red
   opposing runners), and a ball, all draggable with a finger. Toggle position
   names on/off.
-- **Chalk arrows in six colors** (white, violet, red, blue, green, black — yellow is reserved for the ball) — tap DRAW and sketch arrows on the field;
-  pick a color from the swatches; press and hold DRAW to switch between solid
-  and dotted lines; UNDO and CLEAR to tidy up.
+- **Chalk arrows in six colors** — white, violet, red, blue, green and black
+  (yellow is reserved for the ball). Tap DRAW and sketch arrows on the field,
+  press and hold DRAW to switch between solid and dotted lines; UNDO and CLEAR
+  to tidy up.
 - **Ball trails** — press and hold the ball to choose GROUND BALL (dotted),
   FLY BALL (arc), or LINE DRIVE (straight), then drag the ball to where it
   goes and the hit is drawn behind it. Trails always render as a glowing
