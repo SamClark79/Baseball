@@ -1,5 +1,5 @@
 // Chalk Talk service worker — cache-first so the board works offline at the field.
-const CACHE = 'chalk-talk-v13';
+const CACHE = 'chalk-talk-v14';
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

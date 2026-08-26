@@ -266,6 +266,10 @@
     border-radius:12px; padding:0 18px; cursor:pointer;
   }
   .empty{color:var(--fog-dim); font-weight:600; font-size:14px; text-align:center; padding:30px 10px; line-height:1.5;}
+  .ver{
+    margin-top:18px; text-align:center; font-family:'Graduate','Arial Black',sans-serif;
+    font-size:11px; letter-spacing:.1em; color:var(--ink-3);
+  }
   .empty img{width:92px; height:92px; border-radius:22px; display:block; margin:0 auto 12px;}
 
   /* ── Narrow screens: rail moves to bottom ── */
@@ -452,16 +456,17 @@ let playing = false;
 
 const COLORS = [
   {name:'Chalk white', hex:'#fdfaf1'},
-  {name:'Yellow',      hex:'#ffd93d'},
+  {name:'Violet',      hex:'#a97bff'},
   {name:'Red',         hex:'#ff5a4e'},
   {name:'Blue',        hex:'#4dc3ff'},
   {name:'Green',       hex:'#b4e015'},
   {name:'Black',       hex:'#101c24'},
 ];
+const APP_VERSION = 'v14';
 let drawColor = COLORS[0].hex;
-const STATCAST = '#ffe600';                 // the MLB tracer yellow
-// Ball trails default to the Statcast tracer; picking any other swatch overrides it.
-const trailColor = () => drawColor===COLORS[0].hex ? STATCAST : drawColor;
+// Yellow is reserved for the ball: trails are always the MLB tracer colour,
+// whatever chalk colour is selected, so a yellow line always means the ball.
+const STATCAST = '#ffe600';
 let arrowStyle = 'solid';                   // hold DRAW to switch to dotted
 let outs = 0;          // 0-3, shown in the corner box
 let signal = null;     // 'go' | 'look' | 'stop' — the colour band at the top
@@ -798,7 +803,7 @@ function endPointer(){
   if(armedTrail && drag && drag.id==='BALL' && trailStart){
     const end=positions.BALL.slice();
     if(Math.hypot(end[0]-trailStart[0],end[1]-trailStart[1])>34){
-      chalk.push({kind:armedTrail, color:trailColor(), pts:[trailStart,end]});
+      chalk.push({kind:armedTrail, color:STATCAST, pts:[trailStart,end]});
       armedTrail=null; renderChalk();
     }
   }
@@ -1321,6 +1326,10 @@ function renderPanel(){
       wrap.appendChild(b); wrap.appendChild(del);
       body.appendChild(wrap);
     });
+    const ver=document.createElement('div');
+    ver.className='ver';
+    ver.textContent='CHALK TALK '+APP_VERSION;
+    body.appendChild(ver);
   }
 }
 
@@ -1333,6 +1342,15 @@ if(!loadStore(BOARD_KEY,null)){
   showTip('Welcome, Coach!','Drag players with a finger. Hold the ball to draw a hit. Tap DRAW to chalk arrows, or open SITUATIONS to set up the bases.');
 }
 if('serviceWorker' in navigator){
+  // A page already under a worker reloads once when a newer one takes over, so
+  // opening the app on wi-fi is enough to land on the new build.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!hadController || reloaded) return;
+    reloaded = true;
+    location.reload();
+  });
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
