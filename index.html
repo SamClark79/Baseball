@@ -48,6 +48,7 @@
     overflow:hidden; overscroll-behavior:none;
     -webkit-user-select:none; user-select:none;
   }
+  input,textarea{-webkit-user-select:text; user-select:text;}
 
   /* ── Header ─────────────────────────────── */
   header{
@@ -255,8 +256,9 @@
   .save-row{display:flex; gap:8px; margin-bottom:16px;}
   .save-row input{
     flex:1; min-width:0; background:var(--ink-2); border:2px solid var(--ink-3); border-radius:12px;
-    color:var(--fog); font:700 15px 'Nunito',sans-serif; padding:12px;
+    color:var(--fog); font:700 16px 'Nunito',sans-serif; padding:14px 12px;
   }
+  .save-row input:focus{outline:none; border-color:var(--green);}
   .save-row input::placeholder{color:var(--fog-dim);}
   .save-row button{
     flex:none; background:var(--blue-deep); border:2px solid var(--blue-ink); color:#fff;
@@ -1246,19 +1248,24 @@ function renderPanel(){
   }else{
     const row=document.createElement('div');
     row.className='save-row';
-    row.innerHTML='<input id="playName" placeholder="Name this play…" maxlength="40"><button id="btnSave">SAVE</button>';
+    row.innerHTML='<input id="playName" type="text" inputmode="text" enterkeyhint="done" '+
+      'autocapitalize="words" autocorrect="off" spellcheck="false" '+
+      'placeholder="Name this play…" maxlength="40"><button id="btnSave">SAVE</button>';
     body.appendChild(row);
-    row.querySelector('#btnSave').onclick=()=>{
-      const inp=row.querySelector('#playName');
+    const inp=row.querySelector('#playName');
+    const savePlay=()=>{
       const name=inp.value.trim()||('Play '+(plays.length+1));
       plays.unshift({name, when:new Date().toLocaleDateString(),
         board:{positions:snapshot(),chalk:JSON.parse(JSON.stringify(chalk)),
                steps:JSON.parse(JSON.stringify(steps)),namesOn}});
       saveStore(PLAYS_KEY,plays);
       inp.value='';
+      inp.blur();
       renderPanel();
       toast('Saved “'+name+'”');
     };
+    row.querySelector('#btnSave').onclick=savePlay;
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); savePlay(); } });
     if(!plays.length){
       const e=document.createElement('div');
       e.className='empty';
