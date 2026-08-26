@@ -89,20 +89,26 @@
 
   /* ── Outs box ───────────────────────────── */
   #outs{
-    position:absolute; left:14px; top:14px; z-index:5;
-    background:rgba(13,31,36,.86); border:2px solid var(--ink-3); border-radius:14px;
-    padding:8px 12px 10px; text-align:center; box-shadow:var(--shadow);
+    position:absolute; left:16px; top:16px; z-index:5;
+    background:rgba(13,31,36,.88); border:3px solid var(--ink-3); border-radius:20px;
+    padding:12px 18px 16px; text-align:center; box-shadow:var(--shadow);
   }
   #outs .lbl{
-    font-family:'Graduate','Arial Black',sans-serif; font-size:11px; letter-spacing:.12em;
-    color:var(--fog-dim); display:block; margin-bottom:6px;
+    font-family:'Graduate','Arial Black',sans-serif; font-size:17px; letter-spacing:.14em;
+    color:var(--fog); display:block; margin-bottom:10px;
   }
-  #outs .dots{display:flex; gap:8px;}
+  #outs .dots{display:flex; gap:14px;}
   #outs .dot{
-    width:26px; height:26px; border-radius:50%; cursor:pointer; padding:0;
-    background:transparent; border:3px solid var(--fog-dim);
+    width:48px; height:48px; border-radius:50%; cursor:pointer; padding:0;
+    background:transparent; border:5px solid var(--fog-dim);
   }
   #outs .dot.on{background:var(--pink); border-color:#fff;}
+  @media (max-width:640px){
+    #outs{padding:9px 13px 12px; border-radius:16px;}
+    #outs .lbl{font-size:14px; margin-bottom:7px;}
+    #outs .dots{gap:10px;}
+    #outs .dot{width:36px; height:36px; border-width:4px;}
+  }
 
   /* ── Tip banner ─────────────────────────── */
   #tip{
@@ -436,7 +442,8 @@ function defaultPositions(){
 /* ================= State ================= */
 let positions = standardPositions();  // id -> [x,y]  (real default set at boot)
 let chalk = [];                       // {kind,color,pts} — arrows and ball trails
-let steps = [];                       // array of position maps
+let steps = [];                       // [{pos, chalk}] — chalk is captured per step
+let chalkView = null;                 // during playback, the chalk belonging to the current step
 let namesOn = false;
 let mode = 'move';
 let playing = false;
@@ -511,8 +518,9 @@ function buildPark(){
 }
 buildPark();
 
-const chalkLayer = el('g',{},svg);
-const pieceLayer = el('g',{},svg);
+const coachLayer = el('g',{id:'coachLayer'},svg);
+const chalkLayer = el('g',{id:'chalkLayer'},svg);
+const pieceLayer = el('g',{id:'pieceLayer'},svg);
 
 /* ================= Pieces ================= */
 const pieceEls = {};
@@ -589,7 +597,28 @@ function clearCones(){
   toast(n===1?'Cone cleared':'All '+n+' cones cleared');
 }
 
+// Base coaches show up whenever our runners are out there, and wear the
+// signal colour so they double as the wristband system's stoplight.
+const SIGNAL_COLORS={go:'#3fbf4a', look:'#f2c31d', stop:'#e4402f'};
+const COACH_SPOTS=[[800,585],[200,585]];      // foul ground past first and third
+const OUR_RUNNERS=['BT','G1','G2','G3'];
+const BENCH_Y=845;
+function renderCoaches(){
+  coachLayer.textContent='';
+  const onField = OUR_RUNNERS.some(id=>positions[id] && positions[id][1] < BENCH_Y);
+  if(!onField) return;
+  const sig = signal ? SIGNAL_COLORS[signal] : null;
+  COACH_SPOTS.forEach(([x,y])=>{
+    const g=el('g',{transform:`translate(${x} ${y})`},coachLayer);
+    el('circle',{r:27,fill:sig||'none',stroke:'#fdfaf1','stroke-width':5},g);
+    el('text',{y:10,'text-anchor':'middle','font-size':26,'font-weight':800,
+      'font-family':"'Graduate','Arial Black',sans-serif",
+      fill: sig==='#e4402f' ? '#ffffff' : (sig ? '#0d1f24' : '#fdfaf1')},g).textContent='C';
+  });
+}
+
 function render(){
+  renderCoaches();
   for(const id in pieceEls){
     if(!positions[id]) continue;
     const [x,y]=positions[id];
@@ -628,9 +657,23 @@ function head(g,from,to,color,w){
   el('path',{d:headPath(from,to),fill:'none',stroke:color,'stroke-width':w,
     'stroke-linecap':'round','stroke-linejoin':'round',opacity:.95},g);
 }
+// A step keeps the marks that existed when it was taken, so playback reveals
+// arrows exactly where the coach drew them. Older saves stored a bare position
+// map; those replay with whatever chalk is on the board (chalk: null).
+function normStep(s){
+  if(s && s.pos) return {pos:s.pos, chalk:(s.chalk||[]).map(normChalk)};
+  return {pos:s, chalk:null};
+}
+function stepSnapshot(){
+  return {pos:snapshot(), chalk:JSON.parse(JSON.stringify(chalk)).map(normChalk)};
+}
+function showStepChalk(st){
+  chalkView = st.chalk || null;
+  renderChalk();
+}
 function renderChalk(){
   chalkLayer.textContent='';
-  chalk.forEach(raw=>{
+  (chalkView || chalk).forEach(raw=>{
     const c=normChalk(raw), pts=c.pts, col=c.color;
     if(pts.length<2) return;
     const g=el('g',{},chalkLayer);
@@ -708,6 +751,7 @@ svg.addEventListener('pointerdown',e=>{
   const p=toField(e); if(!p) return;
   e.preventDefault();
   hideBallMenu(); hideDrawMenu();
+  if(chalkView){ chalkView=null; renderChalk(); }
   if(mode==='draw'){
     sketch={kind:'arrow', color:drawColor, style:arrowStyle, pts:[p]};
     chalk.push(sketch);
@@ -863,6 +907,7 @@ function renderBand(){
   $('band').querySelectorAll('button').forEach(b=>{
     b.classList.toggle('on', b.getAttribute('data-sig')===signal);
   });
+  renderCoaches();
 }
 $('band').querySelectorAll('button').forEach(b=>{
   b.onclick=()=>{
@@ -873,7 +918,8 @@ $('band').querySelectorAll('button').forEach(b=>{
 });
 
 $('btnStep').onclick=()=>{
-  steps.push(snapshot());
+  chalkView=null;                       // back to the live board before recording
+  steps.push(stepSnapshot());
   updateStepUI(); saveBoard();
   toast('Step '+steps.length+' saved'+(steps.length===1?' — move players, then add step 2':''));
 };
@@ -898,25 +944,28 @@ function play(){
   playing=true; $('btnPlay').classList.add('on');
   const token=++playToken;
   const seq=steps.map(s=>{
-    const c={}; for(const id in s) c[id]=s[id].slice(); return c;
+    const n=normStep(s), c={};
+    for(const id in n.pos) c[id]=n.pos[id].slice();
+    return {pos:c, chalk:n.chalk};
   });
   const DUR = reduceMotion?0:850, PAUSE=reduceMotion?600:280;
   let i=0;
-  for(const id in seq[0]) positions[id]=seq[0][id].slice();
-  render();
+  for(const id in seq[0].pos) positions[id]=seq[0].pos[id].slice();
+  syncCones(); render(); showStepChalk(seq[0]);
   function nextLeg(){
     if(token!==playToken) return;
     if(i>=seq.length-1){
-      playing=false; $('btnPlay').classList.remove('on'); saveBoard(); return;
+      playing=false; $('btnPlay').classList.remove('on');
+      saveBoard(); return;                // view stays on the final step; a touch restores the live marks
     }
-    const a=seq[i], b=seq[i+1];
+    const a=seq[i].pos, b=seq[i+1].pos;
     const t0=performance.now();
     function frame(now){
       if(token!==playToken) return;
       const t=DUR?Math.min(1,(now-t0)/DUR):1;
       lerpPositions(a,b,t);
       if(t<1) requestAnimationFrame(frame);
-      else { i++; setTimeout(nextLeg,PAUSE); }
+      else { i++; showStepChalk(seq[i]); setTimeout(nextLeg,PAUSE); }
     }
     requestAnimationFrame(frame);
   }
@@ -941,7 +990,7 @@ $('tipClose').onclick=()=>$('tip').classList.remove('show');
 /* ================= Reset ================= */
 $('btnReset').onclick=()=>{
   playToken++; playing=false; $('btnPlay').classList.remove('on');
-  positions=defaultPositions(); chalk=[]; steps=[];
+  positions=defaultPositions(); chalk=[]; steps=[]; chalkView=null;
   outs=0; signal=null;
   $('tip').classList.remove('show');
   syncCones(); renderOuts(); renderBand(); updateConeUI();
@@ -1014,7 +1063,7 @@ function loadLesson(les){
   playToken++; playing=false; $('btnPlay').classList.remove('on');
   positions = les.steps.length ? JSON.parse(JSON.stringify(les.steps[0])) : defaultPositions();
   syncCones(); updateConeUI();
-  chalk = JSON.parse(JSON.stringify(les.chalk));
+  chalk = JSON.parse(JSON.stringify(les.chalk)); chalkView=null;
   steps = JSON.parse(JSON.stringify(les.steps));
   namesOn=true; $('btnNames').classList.add('on');   // lessons name the positions
   render(); renderChalk(); updateStepUI(); saveBoard();
@@ -1056,7 +1105,7 @@ function loadSituation(state, side){
   const ids = side==='offense' ? ['G1','G2','G3'] : ['R1','R2','R3'];
   state.bases.forEach((b,i)=>{ p[ids[i]]=[b[0],b[1]]; });
   if(side==='defense' && state.bases.includes(FIRST)) p['1B']=[750,580];  // holding the runner on
-  positions=p; chalk=[]; steps=[];
+  positions=p; chalk=[]; steps=[]; chalkView=null;
   syncCones(); render(); renderChalk(); updateStepUI(); updateConeUI(); saveBoard();
   showTip(state.title, (side==='offense'?OFFENSE_TIPS:DEFENSE_TIPS)[state.key]);
   closePanel();
@@ -1238,6 +1287,13 @@ function renderPanel(){
         chalk=JSON.parse(JSON.stringify(pl.board.chalk||[])).map(normChalk);
         steps=JSON.parse(JSON.stringify(pl.board.steps||[]));
         namesOn=!!pl.board.namesOn;
+        chalkView=null;
+        if(steps.length){                     // open the play at its first step
+          const first=normStep(steps[0]);
+          for(const id in first.pos) positions[id]=first.pos[id].slice();
+          syncCones();
+          chalkView=first.chalk;
+        }
         $('btnNames').classList.toggle('on',namesOn);
         $('tip').classList.remove('show');
         render(); renderChalk(); updateStepUI(); saveBoard();

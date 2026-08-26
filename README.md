@@ -22,10 +22,15 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
   FLY BALL (arc), or LINE DRIVE (straight), then drag the ball to where it
   goes and the hit is drawn behind it. Trails render as a glowing Statcast-style
   tracer in MLB tracker yellow; picking any other swatch colour overrides it.
-- **Outs box** — a scoreboard-style box in the corner of the field; tap a dot
-  to set 0-3 outs, tap the lit dot again to back off one.
+- **Outs box** — a big scoreboard-style box in the corner of the field, sized to
+  read from a huddle; tap a dot to set 0-3 outs, tap the lit dot again to back
+  off one.
 - **Signal band** — a green / yellow / red band across the top; tap a colour to
   light it up, tap it again to clear.
+- **Base coaches** — whenever one of your runners (or the batter) is out on the
+  field, a coach circle appears in foul ground past first and third. They are
+  open circles marked C, and they take on the signal band's colour, so they
+  double as the stoplight for a wristband running system.
 - **Cones** — tap CONE + to drop a traffic cone on the field for laying out
   drills, drag it anywhere, and press and hold a cone to take it off. A
   CLEAR CONES button appears under CONE + whenever cones are on the field and
@@ -39,7 +44,10 @@ Store. It runs entirely on the iPad and keeps working offline once installed.
   save it in the Situations tab; RESET and every Situation use it from then on.
   Position names are off by default and toggle on with NAMES.
 - **Animated plays** — tap STEP + to snapshot the field, move the players, add
-  more steps, then press PLAY to watch everyone move.
+  more steps, then press PLAY to watch everyone move. Each step also captures
+  the chalk drawn at that moment, so arrows appear as the play reaches them
+  instead of cluttering earlier steps. Loading a saved play opens it at step 1,
+  and PLAY always restarts from the beginning.
 - **6 built-in tee-ball lessons** — where to stand, run through first, run the
   bases in order, ground ball to first, force at second, and throwing the ball
   in from the outfield. Each comes with a big coaching tip and most are
