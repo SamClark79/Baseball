@@ -222,6 +222,7 @@
     transform:translateX(105%); transition:transform .25s ease;
     display:flex; flex-direction:column; z-index:10;
     padding-top:env(safe-area-inset-top);
+    padding-right:env(safe-area-inset-right);   /* keeps the close button clear of a side Dynamic Island */
   }
   #panel.show{transform:translateX(0);}
   .panel-head{display:flex; align-items:center; padding:14px 16px 0;}
@@ -294,21 +295,27 @@
   /* ── Open iPhone Duo (book-style foldable held open in landscape) ──────────
      951x669 home-screen app, 951x585 Safari tab. The field runs the full
      screen height; the tools sit in a thumb column on each side.
+     The Dynamic Island and status icons stand in an 84pt column down the
+     right edge (safe-area-inset-right 84, bottom 34, top 0), so only the
+     column on that side widens for it.
      No full-screen iPad can match: every iPad landscape viewport is >=1024
      wide (older 1024x768 / 1080x810 iPads drop under 720 tall in a Safari
      tab, hence the 1000 cap); every iPad portrait viewport is >=1024 tall. */
   @media (min-width:860px) and (max-width:1000px) and (min-height:560px) and (max-height:720px){
     :root{
       --fw:calc(100dvh * 1000 / 940);   /* field width when it fills the height */
-      --side:max(calc(112px + max(env(safe-area-inset-left), env(safe-area-inset-right))),
-                 calc((100vw - var(--fw)) / 2));            /* each thumb column */
+      --sl0:calc(120px + env(safe-area-inset-left));       /* narrowest that keeps "CONE +" on one line */
+      --sr0:calc(112px + env(safe-area-inset-right));      /* narrowest that fits "SITUATIONS" */
+      --slack:max(0px, calc((100vw - var(--fw) - var(--sl0) - var(--sr0)) / 2));   /* room left once the field fills the height */
+      --sl:calc(var(--sl0) + var(--slack));                /* left column: chalk tools */
+      --sr:calc(var(--sr0) + var(--slack));                /* right column: menus, stoplight, outs */
       --lamp:48px; --dot:48px; --dotgap:8px;               /* tall tier (home-screen app) */
       --outs-h:calc(3 * var(--dot) + 2 * var(--dotgap) + 42px);
       --outs-min:calc(240px + 3 * var(--lamp));            /* first y below the stoplight, + 12px */
     }
     body{
       display:grid;
-      grid-template-columns:var(--side) minmax(0,1fr) var(--side);
+      grid-template-columns:var(--sl) minmax(0,1fr) var(--sr);
       grid-template-rows:auto auto minmax(0,1fr);
       grid-template-areas:"rail stage head" "rail stage band" "rail stage .";
     }
@@ -332,7 +339,7 @@
     #band button{flex:none; height:var(--lamp); border-radius:10px;}
     #outs{
       position:fixed; bottom:auto; height:var(--outs-h);
-      left:calc(100vw - var(--side) + 8px); right:calc(8px + env(safe-area-inset-right));
+      left:calc(100vw - var(--sr) + 8px); right:calc(8px + env(safe-area-inset-right));
       top:max(calc(env(safe-area-inset-top) + var(--outs-min)),
               calc(100dvh - env(safe-area-inset-bottom) - 8px - var(--outs-h)));
       display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -372,7 +379,7 @@
     #tip{
       position:fixed; z-index:6;
       top:calc(8px + env(safe-area-inset-top));
-      left:calc(var(--side) + 10px); right:calc(var(--side) + 10px);
+      left:calc(var(--sl) + 10px); right:calc(var(--sr) + 10px);
       flex-wrap:wrap; align-items:center; gap:0 8px;
       padding:4px 4px 10px 14px; border:2px dashed rgba(253,250,241,.4); border-radius:14px;
       background:rgba(36,70,42,.95); box-shadow:var(--shadow);
@@ -382,6 +389,7 @@
     #tip .tip-close{order:2; width:44px; height:40px; padding:0;}
     #tip .tip-close::after{content:''; position:absolute; inset:0;}   /* tap anywhere on the tip to close it */
     #scrim{z-index:9;}   /* the panel's dimmer covers the floating tip and outs */
+    #panel{width:calc(400px + env(safe-area-inset-right));}   /* full 400 of content beside the island column */
     .ptab{min-height:44px;}
     .panel-close{min-width:44px; min-height:44px;}
   }
@@ -390,14 +398,19 @@
     :root{--lamp:44px; --dot:44px; --dotgap:6px;}
   }
 
-  /* ── Folded iPhone Duo cover screen (~382 x 580-618) and other narrow phones ── */
+  /* ── Folded iPhone Duo cover screen and other narrow phones ──────────────
+     The cover is 466x678 with the Dynamic Island and status icons in an 84pt
+     column at the top of the right edge (safe-area-inset-right 84). The header,
+     stoplight and tip stop short of it; the field and tool strip run under it,
+     where the column below the icons is open. */
   @media (max-width:480px){
     #stage{overflow:hidden;}   /* with the toast rule below, the parked toast no longer peeks over the tool strip */
     #toast{transform:translateX(-50%) translateY(calc(100% + 40px));}
-    header{gap:6px; padding:calc(8px + env(safe-area-inset-top)) 8px 8px;}
+    header{gap:6px; padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));}
+    #band{padding-left:calc(3px + env(safe-area-inset-left)); padding-right:calc(3px + env(safe-area-inset-right));}
     header h1, .tagline, header .spacer{display:none;}
     .hbtn{flex:1 1 auto; min-height:44px; padding:0 4px; font-size:11px; letter-spacing:.04em;}
-    #tip{position:relative; flex-wrap:wrap; gap:0 8px; padding:4px 4px 8px 12px;}
+    #tip{position:relative; flex-wrap:wrap; gap:0 8px; padding:4px calc(4px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left));}
     #tip .tip-title{flex:1 1 auto; font-size:12px;}
     #tip .tip-text{order:3; flex:1 1 100%; font-size:14px; line-height:1.3;}
     #tip .tip-close{order:2; width:44px; height:40px; padding:0;}
@@ -590,7 +603,7 @@ const COLORS = [
   {name:'Green',       hex:'#b4e015'},
   {name:'Black',       hex:'#101c24'},
 ];
-const APP_VERSION = 'v15';
+const APP_VERSION = 'v16';
 let drawColor = COLORS[0].hex;
 // Yellow is reserved for the ball: trails are always the MLB tracer colour,
 // whatever chalk colour is selected, so a yellow line always means the ball.
