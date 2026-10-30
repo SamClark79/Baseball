@@ -349,11 +349,13 @@
     #outs .dots{flex-direction:column; align-items:center; gap:var(--dotgap);}
     #outs .dot{width:var(--dot); height:var(--dot);}
 
-    /* Left thumb column: chalk tools on top, playback anchored at the bottom */
+    /* Left thumb column: chalk tools on top, playback at the bottom. The buttons
+       share the column's height and both Clear buttons keep their slot (dimmed
+       until there is something to clear), so nothing moves between taps. */
     #rail{
       grid-area:rail; width:auto;
       display:grid; grid-template-columns:1fr 1fr; gap:6px;
-      grid-template-rows:repeat(5,auto) minmax(0,1fr) repeat(3,auto);
+      grid-template-rows:1fr auto 1fr 1fr auto auto 1fr 1.25fr;
       padding:calc(8px + env(safe-area-inset-top)) 6px calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
     }
     .rail-gap{display:none;}
@@ -362,10 +364,9 @@
     #btnUndo{grid-row:3; grid-column:1;}   #btnClear{grid-row:3; grid-column:2;}
     #btnNames{grid-row:4; grid-column:1;}  #btnCone{grid-row:4; grid-column:2;}
     #btnClearCones{grid-row:5; grid-column:1 / -1;}
-    /* row 6 is the flexible gap */
-    #btnClearSteps{grid-row:7; grid-column:1 / -1;}   /* above STEP +, so PLAY never moves */
-    #btnStep{grid-row:8; grid-column:1 / -1;}
-    #btnPlay{grid-row:9; grid-column:1 / -1;}
+    #btnClearSteps{grid-row:6; grid-column:1 / -1;}
+    #btnStep{grid-row:7; grid-column:1 / -1;}
+    #btnPlay{grid-row:8; grid-column:1 / -1;}
     .tbtn{min-height:52px; padding:6px 1px; gap:4px; justify-content:center; font-size:11px; letter-spacing:.02em; border-radius:12px;}
     #btnStep,#btnPlay{flex-direction:row; gap:8px;}
     #btnPlay{min-height:64px; font-size:16px; letter-spacing:.08em; background:var(--blue-deep); border-color:var(--blue-ink); color:#fff;}
@@ -373,7 +374,8 @@
     #btnPlay svg{width:26px; height:26px;}
     .swatches{grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:6px; padding:0;}
     .swatch{aspect-ratio:auto; height:44px;}
-    .minibtn{min-height:44px; font-size:11px;}
+    .minibtn{display:block; min-height:44px; font-size:11px;}
+    .minibtn[disabled]{opacity:.4;}
 
     /* Tip floats over the open grass above the fence instead of pushing the field down */
     #tip{
@@ -393,9 +395,12 @@
     .ptab{min-height:44px;}
     .panel-close{min-width:44px; min-height:44px;}
   }
-  /* Shorter open Duo (Safari tab, ~585 tall): 44px lamps and dots so the right column fits */
+  /* Shorter open Duo (Safari tab, ~585 tall): 44px lamps and dots so the right column fits,
+     and the left buttons may shrink to 44px so the column never scrolls */
   @media (min-width:860px) and (max-width:1000px) and (min-height:560px) and (max-height:620px){
     :root{--lamp:44px; --dot:44px; --dotgap:6px;}
+    .tbtn{min-height:44px; padding:3px 1px; gap:2px;}
+    #btnPlay{min-height:52px;}
   }
 
   /* ── Folded iPhone Duo cover screen and other narrow phones ──────────────
@@ -723,7 +728,8 @@ function coneCount(){ return Object.keys(positions).filter(isCone).length; }
 function updateConeUI(){
   const n=coneCount(), b=$('btnClearCones');
   b.classList.toggle('show', n>0);
-  b.textContent = n===1 ? 'CLEAR 1 CONE' : 'CLEAR '+n+' CONES';
+  b.disabled = !n;   // the open Duo shows it dimmed instead of hiding it
+  b.textContent = !n ? 'CLEAR CONES' : n===1 ? 'CLEAR 1 CONE' : 'CLEAR '+n+' CONES';
 }
 function addCone(){
   let n=1; while(positions['K'+n]) n++;
@@ -1036,7 +1042,8 @@ function snapshot(){
 function updateStepUI(){
   const b=$('btnClearSteps');
   b.classList.toggle('show', steps.length>0);
-  b.textContent = 'CLEAR '+steps.length+(steps.length===1?' STEP':' STEPS');
+  b.disabled = !steps.length;
+  b.textContent = !steps.length ? 'CLEAR STEPS' : 'CLEAR '+steps.length+(steps.length===1?' STEP':' STEPS');
 }
 $('btnCone').onclick=addCone;
 $('btnClearCones').onclick=clearCones;
