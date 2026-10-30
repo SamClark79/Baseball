@@ -284,9 +284,137 @@
     }
     .tbtn{min-width:66px; padding:8px 4px;}
     .rail-gap{width:6px; height:auto; border-top:none; border-left:2px solid var(--ink-2); margin:6px 4px;}
+    /* fixed swatch size: in a row strip WebKit collapses width:100% swatches to 4px */
+    .swatches{flex:none; grid-template-columns:repeat(3,26px); grid-auto-rows:26px; align-content:center;}
+    .swatch{width:26px; height:26px; aspect-ratio:auto;}
   }
   @media (prefers-reduced-motion:reduce){
     #panel,#toast{transition:none;}
+  }
+  /* ── Open iPhone Duo (book-style foldable held open in landscape) ──────────
+     951x669 home-screen app, 951x585 Safari tab. The field runs the full
+     screen height; the tools sit in a thumb column on each side.
+     No full-screen iPad can match: every iPad landscape viewport is >=1024
+     wide (older 1024x768 / 1080x810 iPads drop under 720 tall in a Safari
+     tab, hence the 1000 cap); every iPad portrait viewport is >=1024 tall. */
+  @media (min-width:860px) and (max-width:1000px) and (min-height:560px) and (max-height:720px){
+    :root{
+      --fw:calc(100dvh * 1000 / 940);   /* field width when it fills the height */
+      --side:max(calc(112px + max(env(safe-area-inset-left), env(safe-area-inset-right))),
+                 calc((100vw - var(--fw)) / 2));            /* each thumb column */
+      --lamp:48px; --dot:48px; --dotgap:8px;               /* tall tier (home-screen app) */
+      --outs-h:calc(3 * var(--dot) + 2 * var(--dotgap) + 42px);
+      --outs-min:calc(240px + 3 * var(--lamp));            /* first y below the stoplight, + 12px */
+    }
+    body{
+      display:grid;
+      grid-template-columns:var(--side) minmax(0,1fr) var(--side);
+      grid-template-rows:auto auto minmax(0,1fr);
+      grid-template-areas:"rail stage head" "rail stage band" "rail stage .";
+    }
+    main{display:contents;}
+    #stage{grid-area:stage;}   /* full height, under the status bar: the top of the field is open grass */
+    #toast{transform:translateX(-50%) translateY(calc(100% + 40px));}   /* park a 2-line toast fully off screen */
+
+    /* Right thumb column: Reset, menus, stoplight, outs */
+    header{
+      grid-area:head; flex-direction:column; align-items:stretch; gap:5px;
+      padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 0 8px;
+      border-bottom:none;
+    }
+    header .brand, header .spacer{display:none;}
+    .hbtn{min-height:44px; padding:0 4px; font-size:12px; letter-spacing:.06em;}
+    #btnReset{order:-1; margin-bottom:9px;}
+    #band{
+      grid-area:band; flex-direction:column-reverse; gap:4px;   /* red on top, like a stoplight */
+      padding:12px calc(8px + env(safe-area-inset-right)) 0 8px;
+    }
+    #band button{flex:none; height:var(--lamp); border-radius:10px;}
+    #outs{
+      position:fixed; bottom:auto; height:var(--outs-h);
+      left:calc(100vw - var(--side) + 8px); right:calc(8px + env(safe-area-inset-right));
+      top:max(calc(env(safe-area-inset-top) + var(--outs-min)),
+              calc(100dvh - env(safe-area-inset-bottom) - 8px - var(--outs-h)));
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:0; border-radius:16px;
+    }
+    #outs .lbl{font-size:14px; line-height:16px; margin-bottom:6px;}
+    #outs .dots{flex-direction:column; align-items:center; gap:var(--dotgap);}
+    #outs .dot{width:var(--dot); height:var(--dot);}
+
+    /* Left thumb column: chalk tools on top, playback anchored at the bottom */
+    #rail{
+      grid-area:rail; width:auto;
+      display:grid; grid-template-columns:1fr 1fr; gap:6px;
+      grid-template-rows:repeat(5,auto) minmax(0,1fr) repeat(3,auto);
+      padding:calc(8px + env(safe-area-inset-top)) 6px calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    }
+    .rail-gap{display:none;}
+    #modeMove{grid-row:1; grid-column:1;}  #modeDraw{grid-row:1; grid-column:2;}
+    #swatches{grid-row:2; grid-column:1 / -1;}
+    #btnUndo{grid-row:3; grid-column:1;}   #btnClear{grid-row:3; grid-column:2;}
+    #btnNames{grid-row:4; grid-column:1;}  #btnCone{grid-row:4; grid-column:2;}
+    #btnClearCones{grid-row:5; grid-column:1 / -1;}
+    /* row 6 is the flexible gap */
+    #btnClearSteps{grid-row:7; grid-column:1 / -1;}   /* above STEP +, so PLAY never moves */
+    #btnStep{grid-row:8; grid-column:1 / -1;}
+    #btnPlay{grid-row:9; grid-column:1 / -1;}
+    .tbtn{min-height:52px; padding:6px 1px; gap:4px; justify-content:center; font-size:11px; letter-spacing:.02em; border-radius:12px;}
+    #btnStep,#btnPlay{flex-direction:row; gap:8px;}
+    #btnPlay{min-height:64px; font-size:16px; letter-spacing:.08em; background:var(--blue-deep); border-color:var(--blue-ink); color:#fff;}
+    #btnPlay.on{background:var(--green); border-color:var(--green-deep); color:var(--ink);}
+    #btnPlay svg{width:26px; height:26px;}
+    .swatches{grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:6px; padding:0;}
+    .swatch{aspect-ratio:auto; height:44px;}
+    .minibtn{min-height:44px; font-size:11px;}
+
+    /* Tip floats over the open grass above the fence instead of pushing the field down */
+    #tip{
+      position:fixed; z-index:6;
+      top:calc(8px + env(safe-area-inset-top));
+      left:calc(var(--side) + 10px); right:calc(var(--side) + 10px);
+      flex-wrap:wrap; align-items:center; gap:0 8px;
+      padding:4px 4px 10px 14px; border:2px dashed rgba(253,250,241,.4); border-radius:14px;
+      background:rgba(36,70,42,.95); box-shadow:var(--shadow);
+    }
+    #tip .tip-title{flex:1 1 auto; font-size:13px;}
+    #tip .tip-text{order:3; flex:1 1 100%; font-size:16px; line-height:1.3; padding-right:10px;}
+    #tip .tip-close{order:2; width:44px; height:40px; padding:0;}
+    #tip .tip-close::after{content:''; position:absolute; inset:0;}   /* tap anywhere on the tip to close it */
+    #scrim{z-index:9;}   /* the panel's dimmer covers the floating tip and outs */
+    .ptab{min-height:44px;}
+    .panel-close{min-width:44px; min-height:44px;}
+  }
+  /* Shorter open Duo (Safari tab, ~585 tall): 44px lamps and dots so the right column fits */
+  @media (min-width:860px) and (max-width:1000px) and (min-height:560px) and (max-height:620px){
+    :root{--lamp:44px; --dot:44px; --dotgap:6px;}
+  }
+
+  /* ── Folded iPhone Duo cover screen (~382 x 580-618) and other narrow phones ── */
+  @media (max-width:480px){
+    #stage{overflow:hidden;}   /* with the toast rule below, the parked toast no longer peeks over the tool strip */
+    #toast{transform:translateX(-50%) translateY(calc(100% + 40px));}
+    header{gap:6px; padding:calc(8px + env(safe-area-inset-top)) 8px 8px;}
+    header h1, .tagline, header .spacer{display:none;}
+    .hbtn{flex:1 1 auto; min-height:44px; padding:0 4px; font-size:11px; letter-spacing:.04em;}
+    #tip{position:relative; flex-wrap:wrap; gap:0 8px; padding:4px 4px 8px 12px;}
+    #tip .tip-title{flex:1 1 auto; font-size:12px;}
+    #tip .tip-text{order:3; flex:1 1 100%; font-size:14px; line-height:1.3;}
+    #tip .tip-close{order:2; width:44px; height:40px; padding:0;}
+    #tip .tip-close::after{content:''; position:absolute; inset:0;}
+    #outs{                     /* slim scoreboard over the open grass behind the fence */
+      top:6px; left:0; right:0; margin:0 auto; width:max-content;
+      display:flex; align-items:center; gap:10px; padding:4px 8px 4px 12px; border-radius:14px; border-width:2px;
+    }
+    #outs .lbl{margin:0; font-size:13px;}
+    #outs .dots{gap:6px;}
+    #outs .dot{width:44px; height:44px; border-width:4px;}
+    #btnPlay{position:sticky; right:0; z-index:1; box-shadow:-10px 0 10px var(--ink), 10px 0 0 var(--ink);}   /* PLAY stays on screen */
+    /* cover the strip's 10px right padding so scrolled buttons don't peek out past PLAY */
+    #btnPlay::after{content:''; position:absolute; top:-2px; bottom:-2px; left:calc(100% + 2px); width:10px; background:var(--ink);}
+    #btnClearSteps{margin-left:10px;}
+    .ptab{min-height:44px;}
+    .panel-close{min-width:44px; min-height:44px;}
   }
 </style>
 </head>
@@ -462,7 +590,7 @@ const COLORS = [
   {name:'Green',       hex:'#b4e015'},
   {name:'Black',       hex:'#101c24'},
 ];
-const APP_VERSION = 'v14';
+const APP_VERSION = 'v15';
 let drawColor = COLORS[0].hex;
 // Yellow is reserved for the ball: trails are always the MLB tracer colour,
 // whatever chalk colour is selected, so a yellow line always means the ball.
@@ -739,7 +867,9 @@ function showBallMenu(){
   const w=m.offsetWidth, h=m.offsetHeight;
   const box=document.getElementById('stage').getBoundingClientRect();
   m.style.left=Math.max(8,Math.min(box.width-w-8, s[0]-w/2))+'px';
-  m.style.top =Math.max(8,Math.min(box.height-h-8, s[1]-h-42))+'px';
+  // On the open Duo the stage runs under the status bar; the rail's top padding carries the inset.
+  const minTop=Math.max(8, parseFloat(getComputedStyle($('rail')).paddingTop)-box.top);
+  m.style.top =Math.max(minTop,Math.min(box.height-h-8, s[1]-h-42))+'px';
 }
 function hideBallMenu(){ $('ballMenu').hidden=true; }
 function cancelLongPress(){ clearTimeout(lpTimer); lpTimer=null; lpFrom=null; }
@@ -835,6 +965,8 @@ function showDrawMenu(){
   m.style.left=left+'px'; m.style.top=top+'px';
 }
 function hideDrawMenu(){ $('drawMenu').hidden=true; }
+// Folding or unfolding the Duo re-lays the page out; close any pop-menu left at its old spot.
+addEventListener('resize',()=>{ hideBallMenu(); hideDrawMenu(); });
 $('modeDraw').addEventListener('pointerdown',()=>{
   drawLpFired=false;
   clearTimeout(drawLp);
